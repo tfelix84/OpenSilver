@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="TinyPG\Compiler\Templates\C#\Parser.cs" />
+    <Compile Remove="TinyPG\Compiler\Templates\C#\ParseTree.cs" />
+    <Compile Remove="TinyPG\Compiler\Templates\C#\Scanner.cs" />
+    <Compile Remove="TinyPG\Compiler\Templates\C#\TextHighlighter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TinyPG\Compiler\Templates\C#\Parser.cs" />
+    <None Include="TinyPG\Compiler\Templates\C#\ParseTree.cs" />
+    <None Include="TinyPG\Compiler\Templates\C#\Scanner.cs" />
+    <None Include="TinyPG\Compiler\Templates\C#\TextHighlighter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenSilver.Compiler.Common\OpenSilver.Compiler.Common.csproj" />
+  </ItemGroup>
+
+</Project>
