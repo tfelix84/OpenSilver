@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.11.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>
