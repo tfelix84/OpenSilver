@@ -3,21 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 	<Configuration Condition=" '$(Configuration)' == '' ">SL</Configuration>
+	<Optimize>false</Optimize>
+	<DefineConstants>RELEASE;CSHTML5BLAZOR;SILVERLIGHTCOMPATIBLEVERSION;MIGRATION;WORKINPROGRESS</DefineConstants>
   </PropertyGroup>
-
-	<!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SL|AnyCPU' ">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;SILVERLIGHTCOMPATIBLEVERSION;MIGRATION</DefineConstants>
-	</PropertyGroup>-->
-	<PropertyGroup>
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;SILVERLIGHTCOMPATIBLEVERSION;MIGRATION;WORKINPROGRESS</DefineConstants>
-	</PropertyGroup>
-	<!--<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UWP|AnyCPU'">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UWP.WorkInProgress|AnyCPU'">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;WORKINPROGRESS</DefineConstants>
-	</PropertyGroup>-->
-
+	  
   <ItemGroup>
     <Compile Include="..\Runtime\OpenSilver.Xaml\System.Xaml\XamlException.cs" Link="Exceptions\XamlException.cs" />
     <Compile Include="..\Runtime\OpenSilver.Xaml\System.Xaml\XamlParseException.cs" Link="Exceptions\XamlParseException.cs" />
@@ -37,5 +26,13 @@
   <ItemGroup>
     <Folder Include="Exceptions\" />
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="rem rmdir ”$(TargetDir)\Dotfuscator” /s /q" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="rem “$(SolutionDir)ExternalTools\Dotfuscator\Dotfuscator.exe” /in:”$(TargetPath)” /out:”$(TargetDir)\Dotfuscator”" />
+  </Target>
 
 </Project>

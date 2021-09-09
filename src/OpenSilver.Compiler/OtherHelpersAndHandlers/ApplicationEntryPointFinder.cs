@@ -31,10 +31,11 @@ namespace DotNetForHtml5.Compiler
 {
     internal static class ApplicationEntryPointFinder
     {
-        private static readonly AssemblyLoadContext context = new AssemblyLoadContext("Context", true);
+        private static AssemblyLoadContext _context = null;
         public static void GetFullNameOfClassThatInheritsFromApplication(string pathOfAssemblyThatContainsEntryPoint, out string applicationClassFullName, out string assemblyName, out string assemblyFullName)
         {
-            var assembly = context.LoadFromAssemblyPath(pathOfAssemblyThatContainsEntryPoint);
+            _context = new AssemblyLoadContext("Context", true);
+            var assembly = _context.LoadFromAssemblyPath(pathOfAssemblyThatContainsEntryPoint);
 
             // Call the method that finds the type that inherits from Application:
             applicationClassFullName = FindApplicationClassFullName(assembly);
@@ -44,7 +45,15 @@ namespace DotNetForHtml5.Compiler
             assemblyFullName = assembly.FullName;
 
             // Unload the assembly (so that we can later delete it if necessary):
-            context.Unload();
+            
+            var contextReference = new WeakReference(_context);
+            _context = null;
+            _context.Unload();
+            for (int i = 0; contextReference.IsAlive && i < 10; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
         }
 
 

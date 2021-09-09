@@ -213,7 +213,7 @@ namespace DotNetForHtml5.Compiler
                 }
                 else
                 {
-                    logger.WriteError(message, file: sourceFile);
+                    logger.WriteError(ex.ToString(), file: sourceFile);
                 }
 
                 return false;
