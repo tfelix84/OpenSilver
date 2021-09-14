@@ -7,35 +7,26 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Configurations>SL;SL.WorkInProgress;UWP;UWP.WorkInProgress</Configurations>
+		<Configurations>SL;UWP</Configurations>
 		<Platforms>AnyCPU</Platforms>
 		<AssemblyName>OpenSilver</AssemblyName>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<OutputPath>bin\OpenSilver\$(Configuration)\</OutputPath>
 		<NoWarn>1591</NoWarn>
 		<DebugType>full</DebugType>
-		<Optimize>false</Optimize>
+		<Optimize>true</Optimize>
 		<NoCSHTML5Reference>true</NoCSHTML5Reference>
 		<EnableDefaultItems>false</EnableDefaultItems> <!-- This emluates the behavior of NET Framework, which excludes every files by default -->
 		<OpenSilverVersion>1.0.0-alpha-019</OpenSilverVersion>
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;MIGRATION;OPENSILVER</DefineConstants>
 	</PropertyGroup>
 
-	<!-- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SL|AnyCPU' ">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;MIGRATION;OPENSILVER</DefineConstants>
-	</PropertyGroup> -->
-
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SL.WorkInProgress|AnyCPU' ">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;MIGRATION;OPENSILVER;WORKINPROGRESS;WCF_STACK;GD_WIP</DefineConstants>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SL|AnyCPU' ">
+		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;MIGRATION;OPENSILVER;GD_WIP</DefineConstants>
 	</PropertyGroup>
 
-	<!-- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UWP|AnyCPU' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UWP|AnyCPU' ">
 		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;OPENSILVER</DefineConstants>
 	</PropertyGroup>
-
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UWP.WorkInProgress|AnyCPU' ">
-		<DefineConstants>TRACE;DEBUG;CSHTML5BLAZOR;CSHTML5NETSTANDARD;OPENSILVER;WORKINPROGRESS</DefineConstants>
-	</PropertyGroup> -->
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -63,6 +54,7 @@
 		<Compile Include="Microsoft.Expression.Interactivity.Core\WORKINPROGRESS\PropertyChangedTrigger.cs" />
 		<Compile Include="Microsoft.Expression.Interactivity.Core\WORKINPROGRESS\StoryboardAction.cs" />
 		<Compile Include="OpenSilver\Internal\ObjectExtensions.cs" />
+		<Compile Include="OpenSilver\Internal\Parsers.cs" />
 		<Compile Include="OpenSilver\Internal\TokenizerHelper.cs" />
 		<Compile Include="OpenSilver\NotImplementedAttribute.cs" />
 		<Compile Include="PagedCollectionView\CollectionViewGroupInternal.cs" />
@@ -83,6 +75,7 @@
 		<Compile Include="System.ComponentModel.Composition.Hosting\WORKINPROGRESS\DeploymentCatalog.cs" />
 		<Compile Include="System.ComponentModel.Composition\WORKINPROGRESS\CompositionInitializer.cs" />
 		<Compile Include="System.Windows.Media\BrushConverter.cs" />
+		<Compile Include="System.Windows.Media\Color.cs" />
 		<Compile Include="System.Windows.Media\WORKINPROGRESS\CacheModeConverter.cs" />
 		<Compile Include="System.Windows.Media\ColorConverter.cs" />
 		<Compile Include="System.Windows\CornerRadiusConverter.cs" />
@@ -138,9 +131,6 @@
 		<Compile Include="System.Windows.Interactivity\WORKINPROGRESS\TargetedTriggerAction_1.cs" />
 		<Compile Include="System.Windows.Interactivity\WORKINPROGRESS\TriggerBase.cs" />
 		<Compile Include="System.Windows.Interactivity\WORKINPROGRESS\TriggerBase_1.cs" />
-		<Compile Include="System.Windows.Markup\ContentWrapperAttribute.cs" />
-		<Compile Include="System.Windows.Markup\IProvideValueTarget.cs" />
-		<Compile Include="System.Windows.Markup\MarkupExtension.cs" />
 		<Compile Include="System.Windows.Media.Effects\WORKINPROGRESS\BlurEffect.cs" />
 		<Compile Include="System.Windows.Messaging\WORKINPROGRESS\ListenFailedException.cs" />
 		<Compile Include="System.Windows.Messaging\WORKINPROGRESS\LocalMessageReceiver.cs" />
@@ -179,7 +169,6 @@
 		<Compile Include="System.Windows\WORKINPROGRESS\FontStretches.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\NotificationWindow.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\WebRequestCreator.cs" />
-		<Compile Include="System.Xaml\IMarkupExtension.cs" />
 		<Compile Include="System.Windows\IntExtensions.cs" />
 		<Compile Include="System.Windows\LayoutManager.cs" />
 		<Compile Include="System.Windows\EventHandlerExtensions.cs" />
@@ -335,7 +324,6 @@
 		<Compile Include="System.Windows\WORKINPROGRESS\RoutedEventArgs.cs" />
 		<Compile Include="System.Windows\FrameworkPropertyMetadata.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\UIElement.cs" />
-		<Compile Include="System.Windows.Media\WORKINPROGRESS\Color.cs" />
 		<Compile Include="Empty Namespaces\WORKINPROGRESS\SystemXaml.cs" />
 		<Compile Include="System\WORKINPROGRESS\AppDomainExtensions.cs" />
 		<Compile Include="System.Collections.Generic\WORKINPROGRESS\SynchronizedReadOnlyCollection.cs" />
@@ -442,7 +430,6 @@
 		<Compile Include="System.Windows.Input\WORKINPROGRESS\TouchPointCollection.cs" />
 		<Compile Include="System.Windows.Interop\WORKINPROGRESS\Settings.cs" />
 		<Compile Include="System.Windows.Interop\WORKINPROGRESS\SilverlightHost.cs" />
-		<Compile Include="System.Windows.Markup\WORKINPROGRESS\IXamlTypeResolver.cs" />
 		<Compile Include="System.Windows.Markup\XamlReader.cs" />
 		<Compile Include="System.Windows.Media\WORKINPROGRESS\AlignmentX.cs" />
 		<Compile Include="System.Windows.Media\WORKINPROGRESS\AlignmentY.cs" />
@@ -629,7 +616,6 @@
 		<Compile Include="System.Windows.Interactivity\TriggerBase.cs" />
 		<Compile Include="System.Windows.Interactivity\TriggerCollection.cs" />
 		<Compile Include="System.Windows.Markup\MethodToTranslateXamlValueToCSharpAttribute.cs" />
-		<Compile Include="System.Windows.Markup\NullExtension.cs" />
 		<Compile Include="System.Windows.Markup\StaticResourceExtension.cs" />
 		<Compile Include="System.Windows.Markup\ThemeResourceExtension.cs" />
 		<Compile Include="System.Windows.Markup\XamlParseException.cs" />
@@ -1106,7 +1092,6 @@
 		<Compile Include="System.Windows\WORKINPROGRESS\WindowResizeEdge.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\AssemblyPart.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\AssemblyPartCollection.cs" />
-		<Compile Include="System.Windows.Media\Color.cs" />
 		<Compile Include="System.Windows.Media\Colors.cs" />
 		<Compile Include="__COMPATIBILITY__\JSIL.Meta.dll ASSEMBLY\JSIL.Meta\JSIgnoreAttribute.cs" />
 		<Compile Include="__COMPATIBILITY__\JSIL.Meta.dll ASSEMBLY\JSIL.Meta\JSReplacementAttribute.cs" />
@@ -1259,8 +1244,6 @@
 	<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 	<Import Project="..\..\packages\OpenSilver.$(OpenSilverVersion)\build\OpenSilver.targets" Condition=" '$(Configuration)|$(Platform)' == 'SL|AnyCPU' " />
-	<Import Project="..\..\packages\OpenSilver.WorkInProgress.$(OpenSilverVersion)\build\OpenSilver.WorkInProgress.targets" />
 	<Import Project="..\..\packages\OpenSilver.UWPCompatible.$(OpenSilverVersion)\build\OpenSilver.UwpCompatible.targets" Condition=" '$(Configuration)|$(Platform)' == 'UWP|AnyCPU' " />
-	<Import Project="..\..\packages\OpenSilver.UWPCompatible.$(OpenSilverVersion)\build\OpenSilver.UwpCompatible.targets" Condition=" '$(Configuration)|$(Platform)' == 'UWP.WorkInProgress|AnyCPU' " />
 
 </Project>
