@@ -29,8 +29,6 @@ using System.Text;
 using custom::System.Windows.Markup;
 #endif
 using System.Xml.Linq;
-using DotNetForHtml5.Compiler.Common;
-using DotNetForHtml5.Compiler.OtherHelpersAndHandlers;
 using System.Xaml;
 using System.Runtime.Loader;
 
