@@ -204,7 +204,7 @@ namespace DotNetForHtml5.Compiler
                 //-----------------------------------------------------
                 // Display the error and cancel the Build process:
                 //-----------------------------------------------------
-                string message = $"{operationName} failed: {ex.Message}\nNote: the XAML editor sometimes raises errors that are misleading. To see only real non-misleading errors, make sure to close all the XAML editor windows/tabs before compiling.";
+                string message = $"{operationName} failed: {ex}\nNote: the XAML editor sometimes raises errors that are misleading. To see only real non-misleading errors, make sure to close all the XAML editor windows/tabs before compiling.";
 
                 if (ex is XamlParseException)
                 {

@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+	  <!--<TargetFramework>net5.0</TargetFramework>-->
+	  <!--<TargetFramework>netstandard2.1</TargetFramework>-->
+    <TargetFramework>netcoreapp3.0</TargetFramework>
 	<Configuration Condition=" '$(Configuration)' == '' ">SL</Configuration>
 	<Optimize>false</Optimize>
-	<DefineConstants>RELEASE;CSHTML5BLAZOR;SILVERLIGHTCOMPATIBLEVERSION;MIGRATION;WORKINPROGRESS</DefineConstants>
-	<AssemblyName>OpenSilver.Compiler.DotNet</AssemblyName>
+	<DefineConstants>DEBUG;CSHTML5BLAZOR;SILVERLIGHTCOMPATIBLEVERSION;MIGRATION</DefineConstants>
+	<AssemblyName>OpenSilver.Compiler</AssemblyName>
+	<RootNamespace>OpenSilver.Compiler</RootNamespace>
   </PropertyGroup>
 	  
   <ItemGroup>

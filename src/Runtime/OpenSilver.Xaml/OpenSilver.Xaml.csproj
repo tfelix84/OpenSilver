@@ -3,6 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<OutputPath>bin\OpenSilver\$(Configuration)\</OutputPath>
+		<Configurations>SL;UWP</Configurations>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SL|AnyCPU' ">
+		<DefineConstants>TRACE;DEBUG;OPENSILVER;MIGRATION</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UWP|AnyCPU' ">
+		<DefineConstants>TRACE;DEBUG;OPENSILVER</DefineConstants>
+	</PropertyGroup>
+	
 </Project>

@@ -72,6 +72,7 @@ namespace DotNetForHtml5.Compiler
 
         public ReflectionOnSeparateAppDomainHandler(string typeForwardingAssemblyPath = null)
         {
+            Console.WriteLine("[Instantiated]");
             _loadContext = new Context();
 
             // Listen to the "AssemblyResolve" of the current domain so that when we arrive to the "Unwrap" call below, we can locate the "CSharpXamlForHtml5.Compiler.Common.dll" file. // For information: http://forums.codeguru.com/showthread.php?398030-AppDomain-CreateInstanceAndUnwrap(-)-vs-AppDomain-CreateInstanceFrom
@@ -179,6 +180,7 @@ namespace DotNetForHtml5.Compiler
 
         public void Dispose()
         {
+            Console.WriteLine("[Disposed]");
             this.ClearCache();
             _loadContext.Dispose();
         }
@@ -198,6 +200,11 @@ namespace DotNetForHtml5.Compiler
             // Also load the referenced assemblies too if instructed to do so:
             if (!skipReadingAttributesFromAssemblies && !alreadyLoaded)
             {
+                if (assemblyPath == @"C:\Projects\OpenSilver\src\Runtime\Controls.Data.Input\bin\OpenSilver\SL\netstandard2.0\OpenSilver.Controls.Data.Input.dll")
+                {
+                    Console.WriteLine($"[LoadAssembly] {assemblyPath}");
+                }
+
                 ReadXmlnsDefinitionAttributes(assembly, isBridgeBasedVersion);
                 if (loadReferencedAssembliesToo)
                 {
@@ -510,6 +517,10 @@ namespace DotNetForHtml5.Compiler
             // Ensure that "ifTypeNotFoundTryGuessing" is always false if the
             // namespace is not a CLR namespace. In fact, in that case, we are
             // unable to guess
+            if (string.Equals(localTypeName, "ValidationSummary", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Console.WriteLine($"[DEBUG] {namespaceName} {isNamespaceAnXmlNamespace(namespaceName)} {assemblyNameIfAny} {ifTypeNotFoundTryGuessing}");
+            }
             if (isNamespaceAnXmlNamespace(namespaceName))
             {
                 ifTypeNotFoundTryGuessing = false;
@@ -1133,13 +1144,15 @@ namespace DotNetForHtml5.Compiler
                     }
                 }
             }
-
             if (!doNotRaiseExceptionIfNotFound)
+            {
                 throw new XamlParseException(
                     "Type not found: \"" + localTypeName + "\""
-                    + (!string.IsNullOrEmpty(namespaceName) ? " in namespace: \"" + namespaceName + "\"" : "")
+                    + (!string.IsNullOrEmpty(namespaceName) ? $" in namespace: \"" + namespaceName + "\"" : "")
                     + (!string.IsNullOrEmpty(filterAssembliesAndRetainOnlyThoseThatHaveThisName) ? " in assembly: \"" + filterAssembliesAndRetainOnlyThoseThatHaveThisName + "\"" : "")
                     + ".");
+            }
+
 
             return type;
         }
@@ -1355,26 +1368,66 @@ namespace DotNetForHtml5.Compiler
             // to fix the compilation issue experienced with Client_REP (with the delivery dated Dec 22, 2020)
             try
             {
-                attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
+                if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                {
+                    foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                    {
+                        Console.WriteLine($"[Loaded Default] {asm.GetName().FullName}");
+                    }
+                    var name = assembly.GetReferencedAssemblies().Single(a => a.Name.Contains("netstandard"));
+                    AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+
+                    Console.WriteLine($"[xmnlnsTypeInfo] {xmlnsDefinitionAttributeType.Assembly};{xmlnsDefinitionAttributeType.FullName}");
+                    attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
+                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                    {
+                        Console.WriteLine($@"[attributeCount] {attributes.Count()}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[xmnlnsTypeInfo] {xmlnsDefinitionAttributeType.Assembly};{xmlnsDefinitionAttributeType.FullName}");
+                    attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
+                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                    {
+                        Console.WriteLine($@"[attributeCount] {attributes.Count()}");
+                    }
+                }
+
             }
-            catch
+            catch (Exception e)
             {
                 try
                 {
+                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                    {
+                        Console.WriteLine("------------------\n" + e + "\n------------------\n");
+                    }
                     attributesData = assembly.GetCustomAttributesData();
                 }
-                catch
+                catch (Exception ex)
                 {
+                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                    {
+                        Console.WriteLine("------------------\n" + ex + "\n------------------\n");
+                    }
+
                     // Fails silently
                 }
             }
 #else
                 attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
 #endif
+
             foreach (var attribute in attributes)
             {
                 string xmlNamespace = (xmlnsDefinitionAttributeType.GetProperty("XmlNamespace").GetValue(attribute) ?? "").ToString();
                 string clrNamespace = (xmlnsDefinitionAttributeType.GetProperty("ClrNamespace").GetValue(attribute) ?? "").ToString();
+                if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
+                {
+                    Console.WriteLine($@"[attribute] {xmlNamespace} {clrNamespace}");
+                }
+
                 if (!string.IsNullOrEmpty(xmlNamespace) && !string.IsNullOrEmpty(clrNamespace))
                 {
                     if (xmlNamespaceToClrNamespaces == null)
@@ -1612,6 +1665,11 @@ namespace DotNetForHtml5.Compiler
                 _reflectionContext = new MetadataLoadContext(resolver);
             }
 
+            public IDisposable EnterContextualReflection()
+            {
+                return _context.EnterContextualReflection();
+            }
+
             private void ThrowIfDisposed()
             {
                 if (isDisposed)
@@ -1649,6 +1707,7 @@ namespace DotNetForHtml5.Compiler
                 var assemblyName = new AssemblyName(assemblyString);
                 assemblyName.CultureInfo = System.Globalization.CultureInfo.InvariantCulture;
 
+                Console.WriteLine($"[LoadFromAssemblyPath] {assemblyString}");
                 return _context.LoadFromAssemblyName(assemblyName);
             }
 
@@ -1656,6 +1715,7 @@ namespace DotNetForHtml5.Compiler
             {
                 ThrowIfDisposed();
 
+                Console.WriteLine($"[LoadFromAssemblyPath] {assemblyPath}");
                 return _context.LoadFromAssemblyPath(assemblyPath);
             }
 
@@ -1663,6 +1723,7 @@ namespace DotNetForHtml5.Compiler
             {
                 ThrowIfDisposed();
 
+                Console.WriteLine($"[LoadFromAssemblyName] {assemblyName.Name}");
                 return _context.LoadFromAssemblyName(assemblyName);
             }
 
@@ -1670,6 +1731,7 @@ namespace DotNetForHtml5.Compiler
             {
                 ThrowIfDisposed();
 
+                Console.WriteLine($"[ReflectionOnlyLoadFromAssemblyName] {assemblyName.Name}");
                 return _reflectionContext.LoadFromAssemblyName(assemblyName);
             }
 
@@ -1680,6 +1742,7 @@ namespace DotNetForHtml5.Compiler
                 var assemblyName = new AssemblyName(assemblyString);
                 assemblyName.CultureInfo = System.Globalization.CultureInfo.InvariantCulture;
 
+                Console.WriteLine($"[ReflectionOnlyLoad] {assemblyString}");
                 return _reflectionContext.LoadFromAssemblyName(assemblyName);
             }
 
@@ -1687,6 +1750,7 @@ namespace DotNetForHtml5.Compiler
             {
                 ThrowIfDisposed();
 
+                Console.WriteLine($"[ReflectionOnlyLoadFromPath] {assemblyPath}");
                 return _reflectionContext.LoadFromAssemblyPath(assemblyPath);
             }
         }

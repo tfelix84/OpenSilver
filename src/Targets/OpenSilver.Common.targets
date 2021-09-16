@@ -27,26 +27,24 @@
   LOCATION OF COMPILER TASKS
   ============================================================-->
 
-    <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
-	    <CompilerAssemblyName>OpenSilver.Compiler.dll</CompilerAssemblyName>
-    </PropertyGroup>
-	<PropertyGroup Condition="'$(MSBuildRuntimeType)' != 'Core'">
-		<CompilerAssemblyName>OpenSilver.Compiler.DotNet.dll</CompilerAssemblyName>
+    <PropertyGroup>
+	    <CompilerAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\netfx\OpenSilver.Compiler.dll</CompilerAssembly>
+		<CompilerAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netcore\OpenSilver.Compiler.dll</CompilerAssembly>
     </PropertyGroup>
 	
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.AssemblyReferenceValidator" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.EntryPointGenerator" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.AssemblyAttributesGenerator" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.ServiceReferenceFixer" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.ResourcesProcessor" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.ResXProcessor" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.BeforeXamlPreprocessor" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.XamlPreprocessor" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.AfterXamlPreprocessor" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.OutputPathsEraser" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.ResourcesExtractorAndCopier" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.Wrapper_BridgeVersion" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\$(CompilerAssemblyName)" TaskName="DotNetForHtml5.Compiler.TypeScriptDefToCSharp" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.AssemblyReferenceValidator" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.EntryPointGenerator" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.AssemblyAttributesGenerator" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.ServiceReferenceFixer" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.ResourcesProcessor" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.ResXProcessor" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.BeforeXamlPreprocessor" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.XamlPreprocessor" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.AfterXamlPreprocessor" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.OutputPathsEraser" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.ResourcesExtractorAndCopier" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.Wrapper_BridgeVersion" />
+  <UsingTask AssemblyFile="$(CompilerAssembly)" TaskName="DotNetForHtml5.Compiler.TypeScriptDefToCSharp" />
 
   <ItemGroup>
     <AvailableItemName Include="ApplicationDefinition" />

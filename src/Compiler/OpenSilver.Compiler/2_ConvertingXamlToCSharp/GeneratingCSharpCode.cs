@@ -187,8 +187,8 @@ namespace DotNetForHtml5.Compiler
             // Traverse the tree in "post order" (ie. start with child elements then traverse parent elements):
             foreach (var element in PostOrderTreeTraversal.TraverseTreeInPostOrder(doc.Root))
             {
-                try
-                {
+                //try
+                //{
                     // Get the namespace, local name, and optional assembly that correspond to the element:
                     string namespaceName, localTypeName, assemblyNameIfAny;
                     GettingInformationAboutXamlTypes.GetClrNamespaceAndLocalName(element.Name, out namespaceName, out localTypeName, out assemblyNameIfAny);
@@ -1206,12 +1206,12 @@ dependencyPropertyPath);
                         codeStack.Push(resultingForTheElementAndAllItsChildren);
                     }
                     #endregion
-                }
-                catch (XamlParseException xamlParseException)
-                {
-                    // We create and throw a copy of the "XamlParseException" in order to add the line number information:
-                    throw WithLineInfo(element, xamlParseException);
-                }
+                //}
+                //catch (XamlParseException xamlParseException)
+                //{
+                //    // We create and throw a copy of the "XamlParseException" in order to add the line number information:
+                //    throw WithLineInfo(element, xamlParseException);
+                //}
             }
 
             // Process the code that remains in the stack:
