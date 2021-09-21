@@ -33,12 +33,12 @@ namespace DotNetForHtml5.Compiler
         // ContentTemplate="{TemplateBinding ContentTemplate}" />"
         //------------------------------------------------------------
 
-        public static void Process(XDocument doc, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        public static void Process(XDocument doc, IReflectionContext reflectionOnSeparateAppDomain)
         {
             TraverseNextElement(doc.Root, false, reflectionOnSeparateAppDomain);
         }
 
-        static void TraverseNextElement(XElement currentElement, bool isInsideControlTemplate, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        static void TraverseNextElement(XElement currentElement, bool isInsideControlTemplate, IReflectionContext reflectionOnSeparateAppDomain)
         {
             if (currentElement.Name == GeneratingCSharpCode.DefaultXamlNamespace + "ControlTemplate")
             {
@@ -73,7 +73,7 @@ namespace DotNetForHtml5.Compiler
             }
         }
 
-        private static bool HasAttribute(XElement cp, string attributeName, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        private static bool HasAttribute(XElement cp, string attributeName, IReflectionContext reflectionOnSeparateAppDomain)
         {
             bool found = cp.Attribute(attributeName) != null;
             if (!found)

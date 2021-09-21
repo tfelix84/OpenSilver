@@ -31,7 +31,7 @@ namespace DotNetForHtml5.Compiler
             string sourceFile,
             string fileNameWithPathRelativeToProjectRoot,
             string assemblyNameWithoutExtension,
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain,
+            IReflectionContext reflectionOnSeparateAppDomain,
             bool isFirstPass,
             bool isSLMigration,
             string outputRootPath,

@@ -27,7 +27,7 @@ namespace DotNetForHtml5.Compiler
 {
     //[LoadInSeparateAppDomain]
     //[Serializable]
-    public class XamlPreprocessor : Task // AppDomainIsolatedTask
+    public class XamlPreprocessor : TaskBase // AppDomainIsolatedTask
     {
         [Required]
         public string SourceFile { get; set; }
@@ -92,30 +92,25 @@ namespace DotNetForHtml5.Compiler
 
         public override bool Execute()
         {
-            return Execute(SourceFile, OutputFile, FileNameWithPathRelativeToProjectRoot, AssemblyNameWithoutExtension, CoreAssemblyFiles, IsSecondPass, IsSLMigration, new LoggerThatUsesTaskOutput(this), ActivationAppPath, CSharpXamlForHtml5OutputType, OverrideOutputOnlyIfSourceHasChanged, OutputRootPath, OutputAppFilesPath, OutputLibrariesPath, OutputResourcesPath, Flags, IsBridgeBasedVersion, NameOfAssembliesThatDoNotContainUserCode);
-        }
-
-        public static bool Execute(string sourceFile, string outputFile, string fileNameWithPathRelativeToProjectRoot, string assemblyNameWithoutExtension, string coreAssemblyFiles, bool isSecondPass, bool isSLMigration, ILogger logger, string activationAppPath, string cSharpXamlForHtml5OutputType, bool overrideOutputOnlyIfSourceHasChanged, string outputRootPath, string outputAppFilesPath, string outputLibrariesPath, string outputResourcesPath, string flagsString, bool isBridgeBasedVersion, string nameOfAssembliesThatDoNotContainUserCode)
-        {
-            string passNumber = (isSecondPass ? "2" : "1");
+            string passNumber = (IsSecondPass ? "2" : "1");
             string operationName = string.Format("C#/XAML for HTML5: XamlPreprocessor (pass {0})", passNumber);
             try
             {
                 using (var executionTimeMeasuring = new ExecutionTimeMeasuring())
                 {
                     // Validate input strings:
-                    if (string.IsNullOrEmpty(sourceFile))
+                    if (string.IsNullOrEmpty(SourceFile))
                         throw new Exception(operationName + " failed because the source file argument is invalid.");
-                    if (string.IsNullOrEmpty(outputFile))
+                    if (string.IsNullOrEmpty(OutputFile))
                         throw new Exception(operationName + " failed because the output file argument is invalid.");
-                    if (string.IsNullOrEmpty(fileNameWithPathRelativeToProjectRoot))
+                    if (string.IsNullOrEmpty(FileNameWithPathRelativeToProjectRoot))
                         throw new Exception(operationName + " failed because the FileNameWithPathRelativeToProjectRoot argument is invalid.");
-                    if (string.IsNullOrEmpty(assemblyNameWithoutExtension))
+                    if (string.IsNullOrEmpty(AssemblyNameWithoutExtension))
                         throw new Exception(operationName + " failed because the AssemblyNameWithoutExtension argument is invalid.");
-                    if (string.IsNullOrEmpty(coreAssemblyFiles))
+                    if (string.IsNullOrEmpty(CoreAssemblyFiles))
                         throw new Exception(operationName + " failed because the core assembly file argument is invalid.");
 
-                    HashSet<string> flags = (flagsString != null ? new HashSet<string>(flagsString.Split(';')) : new HashSet<string>());
+                    HashSet<string> flags = (Flags != null ? new HashSet<string>(Flags.Split(';')) : new HashSet<string>());
 
 #if REQUIRE_ACTIVATION_FOR_SILVERLIGHT_MIGRATION
 
@@ -137,16 +132,16 @@ namespace DotNetForHtml5.Compiler
 #endif
 
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + " started for file \"" + sourceFile + "\". Output file: \"" + outputFile + "\". FileNameWithPathRelativeToProjectRoot: \"" + fileNameWithPathRelativeToProjectRoot + "\". AssemblyNameWithoutExtension: \"" + assemblyNameWithoutExtension + "\". Core assembly files: \"" + coreAssemblyFiles + "\". IsSecondPass: " + isSecondPass.ToString() + "\".");
+                    Logger.WriteMessage(operationName + " started for file \"" + SourceFile + "\". Output file: \"" + OutputFile + "\". FileNameWithPathRelativeToProjectRoot: \"" + FileNameWithPathRelativeToProjectRoot + "\". AssemblyNameWithoutExtension: \"" + AssemblyNameWithoutExtension + "\". Core assembly files: \"" + CoreAssemblyFiles + "\". IsSecondPass: " + IsSecondPass.ToString() + "\".");
                     //todo: do not display the output file location?
 
                     // Read the XAML file:
-                    using (StreamReader sr = new StreamReader(sourceFile))
+                    using (StreamReader sr = new StreamReader(SourceFile))
                     {
                         String xaml = sr.ReadToEnd();
 
                         // Determine if the file should be processed or if there is no need to process it again (for example if the XAML has not changed and we are in design-time, we don't want to re-process the XAML):
-                        bool shouldTheFileBeProcessed = DetermineIfTheXamlFileNeedsToBeProcessed(xaml, outputFile, overrideOutputOnlyIfSourceHasChanged, isSecondPass);
+                        bool shouldTheFileBeProcessed = DetermineIfTheXamlFileNeedsToBeProcessed(xaml, OutputFile, OverrideOutputOnlyIfSourceHasChanged, IsSecondPass);
 
                         if (shouldTheFileBeProcessed)
                         {
@@ -158,19 +153,19 @@ namespace DotNetForHtml5.Compiler
                                 throw new Exception("ReflectionOnSeparateAppDomainHandler.Current is null. It should not be null because it was supposed to be populated by the 'BeforeXamlPreprocessor' task. Please verify that the MSBuild Targets are up to date.");
 
                             // Convert XAML to CS:
-                            string generatedCode = ConvertingXamlToCSharp.Convert(xaml, sourceFile, fileNameWithPathRelativeToProjectRoot, assemblyNameWithoutExtension, reflectionOnSeparateAppDomain, isFirstPass: !isSecondPass, isSLMigration: isSLMigration, outputRootPath: outputRootPath, outputAppFilesPath: outputAppFilesPath, outputLibrariesPath: outputLibrariesPath, outputResourcesPath: outputResourcesPath, logger: logger);
+                            string generatedCode = ConvertingXamlToCSharp.Convert(xaml, SourceFile, FileNameWithPathRelativeToProjectRoot, AssemblyNameWithoutExtension, reflectionOnSeparateAppDomain, isFirstPass: !IsSecondPass, isSLMigration: IsSLMigration, outputRootPath: OutputRootPath, outputAppFilesPath: OutputAppFilesPath, outputLibrariesPath: OutputLibrariesPath, outputResourcesPath: OutputResourcesPath, logger: Logger);
 
                             // Add the header that contains the file hash so as to avoid re-processing the file if not needed:
-                            generatedCode = CreateHeaderContainingHash(generatedCode, xaml, isSecondPass)
+                            generatedCode = CreateHeaderContainingHash(generatedCode, xaml, IsSecondPass)
                                 + Environment.NewLine
                                 + Environment.NewLine
                                 + generatedCode;
 
                             // Create output directory:
-                            Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
+                            Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
 
                             // Save output:
-                            using (StreamWriter outfile = new StreamWriter(outputFile))
+                            using (StreamWriter outfile = new StreamWriter(OutputFile))
                             {
                                 outfile.Write(generatedCode);
                             }
@@ -178,7 +173,7 @@ namespace DotNetForHtml5.Compiler
                     }
 
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds.");
+                    Logger.WriteMessage(operationName + " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds.");
 
                     return true;
                 }
@@ -209,11 +204,11 @@ namespace DotNetForHtml5.Compiler
                 if (ex is XamlParseException)
                 {
                     int lineNumber = ((XamlParseException)ex).LineNumber;
-                    logger.WriteError(message, file: sourceFile, lineNumber: lineNumber);
+                    Logger.WriteError(message, file: SourceFile, lineNumber: lineNumber);
                 }
                 else
                 {
-                    logger.WriteError(ex.ToString(), file: sourceFile);
+                    Logger.WriteError(ex.ToString(), file: SourceFile);
                 }
 
                 return false;

@@ -33,12 +33,12 @@ namespace DotNetForHtml5.Compiler
         // if XXX doesn't end on ".Color" or ".Color)"
         //------------------------------------------------------------
 
-        public static void Process(XDocument doc, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        public static void Process(XDocument doc, IReflectionContext reflectionOnSeparateAppDomain)
         {
             TraverseNextElement(doc.Root, reflectionOnSeparateAppDomain);
         }
 
-        static void TraverseNextElement(XElement currentElement, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        static void TraverseNextElement(XElement currentElement, IReflectionContext reflectionOnSeparateAppDomain)
         {
            
             if (currentElement.Name == GeneratingCSharpCode.DefaultXamlNamespace + "ColorAnimation")

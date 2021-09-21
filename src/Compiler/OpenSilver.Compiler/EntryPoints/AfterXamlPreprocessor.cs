@@ -36,10 +36,10 @@ namespace DotNetForHtml5.Compiler
 
         public override bool Execute()
         {
-            return Execute(IsSecondPass, Flags, new LoggerThatUsesTaskOutput(this));
+            return Execute(IsSecondPass, new LoggerThatUsesTaskOutput(this));
         }
 
-        public static bool Execute(bool isSecondPass, string flagsString, ILogger logger)
+        public static bool Execute(bool isSecondPass, ILogger logger)
         {
             string passNumber = (isSecondPass ? "2" : "1");
             string operationName = string.Format("C#/XAML for HTML5: AfterXamlPreprocessor (pass {0})", passNumber);

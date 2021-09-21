@@ -35,7 +35,7 @@ namespace DotNetForHtml5.Compiler
 {
     internal static class GettingInformationAboutXamlTypes
     {
-        public static bool IsPropertyAttached(XElement propertyElement, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        public static bool IsPropertyAttached(XElement propertyElement, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string namespaceName, localName, assemblyNameIfAny;
             GetClrNamespaceAndLocalName(propertyElement.Name, out namespaceName, out localName, out assemblyNameIfAny);
@@ -52,7 +52,7 @@ namespace DotNetForHtml5.Compiler
                 return false;
         }
 
-        public static bool IsPropertyOrFieldACollection(XElement propertyElement, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, bool isAttachedProperty)
+        public static bool IsPropertyOrFieldACollection(XElement propertyElement, IReflectionContext reflectionOnSeparateAppDomain, bool isAttachedProperty)
         {
             if (isAttachedProperty)
             {
@@ -81,7 +81,7 @@ namespace DotNetForHtml5.Compiler
             }
         }
 
-        public static bool IsPropertyOrFieldADictionary(XElement propertyElement, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, bool isAttachedProperty)
+        public static bool IsPropertyOrFieldADictionary(XElement propertyElement, IReflectionContext reflectionOnSeparateAppDomain, bool isAttachedProperty)
         {
             if (isAttachedProperty)
             {
@@ -101,14 +101,14 @@ namespace DotNetForHtml5.Compiler
             }
         }
 
-        internal static bool IsElementADictionary(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        internal static bool IsElementADictionary(XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string elementLocalName, elementNameSpace, assemblyNameIfAny;
             GetClrNamespaceAndLocalName(element.Name, out elementNameSpace, out elementLocalName, out assemblyNameIfAny);
             return reflectionOnSeparateAppDomain.IsElementADictionary(elementNameSpace, elementLocalName, assemblyNameIfAny);
         }
 
-        internal static bool IsElementACollection(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        internal static bool IsElementACollection(XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string elementLocalName, elementNameSpace, assemblyNameIfAny;
             GetClrNamespaceAndLocalName(element.Name, out elementNameSpace, out elementLocalName, out assemblyNameIfAny);
@@ -116,7 +116,7 @@ namespace DotNetForHtml5.Compiler
         }
 
 
-        internal static bool IsElementAMarkupExtension(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        internal static bool IsElementAMarkupExtension(XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string elementLocalName, elementNameSpace, assemblyNameIfAny;
             GetClrNamespaceAndLocalName(element.Name, out elementNameSpace, out elementLocalName, out assemblyNameIfAny);
@@ -130,7 +130,7 @@ namespace DotNetForHtml5.Compiler
         //    return reflectionOnSeparateAppDomain.IsElementAnUIElement(elementNameSpace, elementLocalName, assemblyNameIfAny);
         //}
 
-        internal static bool IsTypeAssignableFrom(XName elementOfTypeToAssignFrom, XName elementOfTypeToAssignTo, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, bool isAttached = false)
+        internal static bool IsTypeAssignableFrom(XName elementOfTypeToAssignFrom, XName elementOfTypeToAssignTo, IReflectionContext reflectionOnSeparateAppDomain, bool isAttached = false)
         {
             string nameOfTypeToAssignFrom, nameSpaceOfTypeToAssignFrom, assemblyNameOfTypeToAssignFrom;
             GetClrNamespaceAndLocalName(elementOfTypeToAssignFrom, out nameSpaceOfTypeToAssignFrom, out nameOfTypeToAssignFrom, out assemblyNameOfTypeToAssignFrom);
@@ -334,7 +334,7 @@ namespace DotNetForHtml5.Compiler
             }
         }
 
-        internal static string GetKeyNameOfProperty(XElement element, string propertyName, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        internal static string GetKeyNameOfProperty(XElement element, string propertyName, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string elementLocalName, elementNameSpace, assemblyNameIfAny;
             GetClrNamespaceAndLocalName(element.Name, out elementNameSpace, out elementLocalName, out assemblyNameIfAny);

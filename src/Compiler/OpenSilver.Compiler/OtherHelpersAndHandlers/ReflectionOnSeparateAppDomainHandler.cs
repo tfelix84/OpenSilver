@@ -13,11 +13,6 @@
 *  
 \*====================================================================================*/
 
-
-#if !BRIDGE && !CSHTML5BLAZOR
-extern alias custom;
-extern alias DotNetForHtml5Core;
-#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,16 +20,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-#if !BRIDGE && !CSHTML5BLAZOR
-using custom::System.Windows.Markup;
-#endif
 using System.Xml.Linq;
 using System.Xaml;
-using System.Runtime.Loader;
+using OpenSilver.Compiler;
 
 namespace DotNetForHtml5.Compiler
 {
-    internal class ReflectionOnSeparateAppDomainHandler : IDisposable
+    internal class ReflectionOnSeparateAppDomainHandler : IReflectionContext, IDisposable
     {
         //Note: we use a new AppDomain so that we can Unload all the assemblies that we have inspected when we have done.
 
@@ -49,14 +41,13 @@ namespace DotNetForHtml5.Compiler
 
         public static ReflectionOnSeparateAppDomainHandler Current;
 
-        private readonly Context _loadContext;
+        private readonly CustomAssemblyLoadContext _loadContext;
 
         Dictionary<string, Assembly> _loadedAssemblySimpleNameToAssembly = new Dictionary<string, Assembly>();
         Dictionary<string, Assembly> _loadedAssemblyPathToAssembly = new Dictionary<string, Assembly>();
         Dictionary<string, Type> _typeNameToType = new Dictionary<string, Type>();
         Dictionary<string, Dictionary<string, HashSet<string>>> _assemblyNameToXmlNamespaceToClrNamespaces = new Dictionary<string, Dictionary<string, HashSet<string>>>(); // Used for XAML namespaces mappings.
         HashSet<Assembly> _coreAssemblies = new HashSet<Assembly>();
-        Dictionary<string, Type> _cacheForResolvedTypesInCoreAssembly = new Dictionary<string, Type>();
         HashSet<string> _attemptedAssemblyLoads = new HashSet<string>();
 
 #if BRIDGE
@@ -72,8 +63,7 @@ namespace DotNetForHtml5.Compiler
 
         public ReflectionOnSeparateAppDomainHandler(string typeForwardingAssemblyPath = null)
         {
-            Console.WriteLine("[Instantiated]");
-            _loadContext = new Context();
+            _loadContext = new CustomAssemblyLoadContext();
 
             // Listen to the "AssemblyResolve" of the current domain so that when we arrive to the "Unwrap" call below, we can locate the "CSharpXamlForHtml5.Compiler.Common.dll" file. // For information: http://forums.codeguru.com/showthread.php?398030-AppDomain-CreateInstanceAndUnwrap(-)-vs-AppDomain-CreateInstanceFrom
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
@@ -98,7 +88,11 @@ namespace DotNetForHtml5.Compiler
             string assemblyName = args.Name;
             string assemblyLocalName = assemblyName.IndexOf(',') >= 0 ? assemblyName.Substring(0, assemblyName.IndexOf(',')) : assemblyName;
 
-
+            // Hack?
+            // For some reason CoreLib is trying to load an exception message from
+            // A seperate assembly. If we remove this condition it will go through
+            // and try to load it again and fail.
+            // TODO: properly investigate this behaviour...
             if (assemblyLocalName.EndsWith("resources"))
             {
                 return null;
@@ -165,12 +159,13 @@ namespace DotNetForHtml5.Compiler
 
         private void ClearCache()
         {
+            // This is necessary as the AssemblyLoadContext will hold on to the assemblies
+            // until all related objects are relinquished.
             _loadedAssemblySimpleNameToAssembly = null;
             _loadedAssemblyPathToAssembly = null;
             _typeNameToType = null;
             _assemblyNameToXmlNamespaceToClrNamespaces = null; // Used for XAML namespaces mappings.
             _coreAssemblies = null;
-            _cacheForResolvedTypesInCoreAssembly = null;
             _attemptedAssemblyLoads = null;
 
 #if CSHTML5BLAZOR
@@ -178,9 +173,11 @@ namespace DotNetForHtml5.Compiler
 #endif
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
-            Console.WriteLine("[Disposed]");
             this.ClearCache();
             _loadContext.Dispose();
         }
@@ -200,11 +197,6 @@ namespace DotNetForHtml5.Compiler
             // Also load the referenced assemblies too if instructed to do so:
             if (!skipReadingAttributesFromAssemblies && !alreadyLoaded)
             {
-                if (assemblyPath == @"C:\Projects\OpenSilver\src\Runtime\Controls.Data.Input\bin\OpenSilver\SL\netstandard2.0\OpenSilver.Controls.Data.Input.dll")
-                {
-                    Console.WriteLine($"[LoadAssembly] {assemblyPath}");
-                }
-
                 ReadXmlnsDefinitionAttributes(assembly, isBridgeBasedVersion);
                 if (loadReferencedAssembliesToo)
                 {
@@ -387,11 +379,6 @@ namespace DotNetForHtml5.Compiler
             bool typeIsAMarkupExtension = (markupExtensionOfObject.IsAssignableFrom(elementType) && elementType != typeof(string));
             return typeIsAMarkupExtension;
         }
-
-        //public bool IsElementAnUIElement(string parentNamespaceName, string parentLocalTypeName, string parentAssemblyNameIfAny = null)
-        //{
-        //    return _marshalledObject.IsElementAnUIElement(parentNamespaceName, parentLocalTypeName, parentAssemblyNameIfAny);
-        //}
 
         public bool IsTypeAssignableFrom(string nameSpaceOfTypeToAssignFrom, string nameOfTypeToAssignFrom, string assemblyNameOfTypeToAssignFrom, string nameSpaceOfTypeToAssignTo, string nameOfTypeToAssignTo, string assemblyNameOfTypeToAssignTo, bool isAttached = false)
         {
@@ -703,34 +690,6 @@ namespace DotNetForHtml5.Compiler
             return field.Name ?? throw new XamlParseException($"Field '{fieldNameIgnoreCase}' not found in type: '{type.FullName}'.");
         }
 
-        public string GetFieldDeclaringTypeName(string fieldName, string namespaceName, string localTypeName, out string assemblyNameOfDeclaringType, string assemblyNameIfAny = null)
-        {
-            var elementType = FindType(namespaceName, localTypeName, assemblyNameIfAny);
-
-            FieldInfo fieldInfo = elementType.GetField(fieldName);
-            Type declaringType = fieldInfo.DeclaringType;
-            assemblyNameOfDeclaringType = declaringType.Assembly.GetName().Name;
-            return "global::" + (!string.IsNullOrEmpty(declaringType.Namespace) ? (declaringType.Namespace + ".") : "") + GetTypeNameIncludingGenericArguments(declaringType);
-        }
-
-        public string GetPropertyDeclaringTypeName(string propertyName, string namespaceName, string localTypeName, out string assemblyNameOfDeclaringType, string assemblyNameIfAny = null)
-        {
-            var elementType = FindType(namespaceName, localTypeName, assemblyNameIfAny);
-
-            PropertyInfo propertyInfo;
-            try
-            {
-                propertyInfo = elementType.GetProperty(propertyName);
-            }
-            catch (AmbiguousMatchException)
-            {
-                propertyInfo = this.GetPropertyLastImplementationIfMultipleMatches(propertyName, elementType);
-            }
-            Type declaringType = propertyInfo.DeclaringType;
-            assemblyNameOfDeclaringType = declaringType.Assembly.GetName().Name;
-            return "global::" + (!string.IsNullOrEmpty(declaringType.Namespace) ? (declaringType.Namespace + ".") : "") + GetTypeNameIncludingGenericArguments(declaringType);
-        }
-
         public string GetCSharpXamlForHtml5CompilerVersionNumberOrNull(string assemblySimpleName)
         {
             if (_loadedAssemblySimpleNameToAssembly.ContainsKey(assemblySimpleName))
@@ -839,36 +798,6 @@ namespace DotNetForHtml5.Compiler
                 throw new Exception(ASSEMBLY_NOT_IN_LIST_OF_LOADED_ASSEMBLIES);
         }
 
-        public Dictionary<string, byte[]> GetManifestResources(string assemblySimpleName, Func<string, bool> filenamePredicate)
-        {
-            if (_loadedAssemblySimpleNameToAssembly.ContainsKey(assemblySimpleName))
-            {
-                var assembly = _loadedAssemblySimpleNameToAssembly[assemblySimpleName];
-
-                var manifestResourceNames = assembly.GetManifestResourceNames();
-                var resourceFiles = (from fn in manifestResourceNames where filenamePredicate(fn) select fn).ToArray();
-                var result = new Dictionary<string, byte[]>();
-
-                foreach (var resourceFile in resourceFiles)
-                {
-                    var stream = assembly.GetManifestResourceStream(resourceFile);
-                    if (stream == null)
-                        throw new FileNotFoundException("No manifest resource stream named " + resourceFile);
-
-                    using (stream)
-                    {
-                        var buffer = new byte[stream.Length];
-                        stream.Read(buffer, 0, buffer.Length);
-                        result[resourceFile] = buffer;
-                    }
-                }
-
-                return result;
-            }
-            else
-                throw new Exception(ASSEMBLY_NOT_IN_LIST_OF_LOADED_ASSEMBLIES);
-        }
-
         public Dictionary<string, byte[]> GetManifestResources(string assemblySimpleName, HashSet<string> supportedExtensionsLowerCase)
         {
             if (_loadedAssemblySimpleNameToAssembly.ContainsKey(assemblySimpleName))
@@ -965,77 +894,6 @@ namespace DotNetForHtml5.Compiler
             }
             else
                 throw new Exception(ASSEMBLY_NOT_IN_LIST_OF_LOADED_ASSEMBLIES);
-        }
-
-        public Type GetTypeInCoreAssemblies(string typeFullName)
-        {
-            if (_cacheForResolvedTypesInCoreAssembly.ContainsKey(typeFullName))
-                return _cacheForResolvedTypesInCoreAssembly[typeFullName];
-            else
-            {
-#if BRIDGE
-                    if (_coreAssemblies.Count == 0)
-                        throw new Exception("The list of CoreAssemblies has not been initialized.");
-#endif
-                foreach (var coreAssembly in _coreAssemblies)
-                {
-                    var type = coreAssembly.GetType(typeFullName, throwOnError: false);
-                    if (type != null)
-                    {
-                        _cacheForResolvedTypesInCoreAssembly[typeFullName] = type;
-                        return type;
-                    }
-                }
-                throw new Exception("Type not found '" + typeFullName + "' in core assemblie(s).");
-            }
-        }
-
-        public bool TryGenerateCodeForInstantiatingAttributeValue(string xamlValue, out string generatedCSharpCode, string valueNamespaceName, string valueLocalTypeName, string valueAssemblyNameIfAny)
-        {
-            //todo: handle built-in types here (Enum, string, int, double, etc.)
-
-            Type type = FindType(valueNamespaceName, valueLocalTypeName, valueAssemblyNameIfAny);
-
-            if (type.FullName == "System.String")
-            {
-                generatedCSharpCode = "@\"" + xamlValue.Replace("\"", "\"\"") + "\"";
-                return true;
-            }
-
-            if (type.IsEnum)
-            {
-                FieldInfo xamlValueToEnumValue = type.GetField(xamlValue, BindingFlags.IgnoreCase);
-                if (xamlValueToEnumValue == null)
-                {
-                    generatedCSharpCode = String.Format("{0}.{1}", "global::" + type.FullName, xamlValue);
-                }
-                else
-                {
-                    generatedCSharpCode = String.Format("{0}.{1}", "global::" + type.FullName, xamlValueToEnumValue.Name);
-                }
-                return true;
-            }
-
-            // Attempt to get the isntance of the attribute if any
-#if BRIDGE || CSHTML5BLAZOR
-            Type methodToTranslateXamlValueToCSharpAttribute = this.FindType("System.Windows.Markup", "MethodToTranslateXamlValueToCSharpAttribute");
-#else
-                Type methodToTranslateXamlValueToCSharpAttribute = typeof(DotNetForHtml5Core::System.Windows.Markup.MethodToTranslateXamlValueToCSharpAttribute);
-#endif
-            var attribute = Attribute.GetCustomAttribute(type, methodToTranslateXamlValueToCSharpAttribute);
-            if (attribute == null)
-            {
-                generatedCSharpCode = "";
-                return false;
-            }
-            string methodName = (methodToTranslateXamlValueToCSharpAttribute.GetProperty("MethodName").GetValue(attribute) ?? "").ToString();
-            if (string.IsNullOrEmpty(methodName))
-            {
-                throw new Exception("Property 'MethodName' not found in type '" + methodToTranslateXamlValueToCSharpAttribute.FullName + "'");
-            }
-            // throw clear exception if the method is not found.
-            generatedCSharpCode = type.GetMethod(methodName).Invoke(null, new object[] { xamlValue }).ToString();
-            return true;
         }
 
         public bool IsAssignableFrom(string namespaceName, string typeName, string fromNamespaceName, string fromTypeName)
@@ -1368,47 +1226,21 @@ namespace DotNetForHtml5.Compiler
             // to fix the compilation issue experienced with Client_REP (with the delivery dated Dec 22, 2020)
             try
             {
-                if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
-                {
-                    foreach (var asm in AssemblyLoadContext.Default.Assemblies)
-                    {
-                        Console.WriteLine($"[Loaded Default] {asm.GetName().FullName}");
-                    }
-                    var name = assembly.GetReferencedAssemblies().Single(a => a.Name.Contains("netstandard"));
-                    AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 
-                    Console.WriteLine($"[xmnlnsTypeInfo] {xmlnsDefinitionAttributeType.Assembly};{xmlnsDefinitionAttributeType.FullName}");
-                    attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
-                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
-                    {
-                        Console.WriteLine($@"[attributeCount] {attributes.Count()}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"[xmnlnsTypeInfo] {xmlnsDefinitionAttributeType.Assembly};{xmlnsDefinitionAttributeType.FullName}");
-                    attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
-                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
-                    {
-                        Console.WriteLine($@"[attributeCount] {attributes.Count()}");
-                    }
-                }
+                attributes = assembly.GetCustomAttributes(xmlnsDefinitionAttributeType);
 
             }
             catch (Exception e)
             {
                 try
                 {
-                    if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
-                    {
-                        Console.WriteLine("------------------\n" + e + "\n------------------\n");
-                    }
                     attributesData = assembly.GetCustomAttributesData();
                 }
                 catch (Exception ex)
                 {
                     if (assemblySimpleName.Equals("OpenSilver.Controls.Data.Input"))
                     {
+                        Console.WriteLine(assembly.GetName().Name);
                         Console.WriteLine("------------------\n" + ex + "\n------------------\n");
                     }
 
@@ -1642,116 +1474,6 @@ namespace DotNetForHtml5.Compiler
             else
             {
                 return false;
-            }
-        }
-
-        private class Context : IDisposable
-        {
-            AssemblyLoadContext _context;
-            MetadataLoadContext _reflectionContext;
-
-            private bool isDisposed = false;
-
-            public Context()
-            {
-                var path = Path.GetDirectoryName(typeof(Context).Assembly.Location);
-                var corelibPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
-
-                var paths = Directory.GetFiles(path, "*.dll");
-                var paths2 = Directory.GetFiles(corelibPath, "*.dll");
-                var resolver = new PathAssemblyResolver(paths.Union(paths2));
-
-                _context = new AssemblyLoadContext("myContext", true);
-                _reflectionContext = new MetadataLoadContext(resolver);
-            }
-
-            public IDisposable EnterContextualReflection()
-            {
-                return _context.EnterContextualReflection();
-            }
-
-            private void ThrowIfDisposed()
-            {
-                if (isDisposed)
-                {
-                    throw new ObjectDisposedException("Already disposed");
-                }
-            }
-
-            public void Dispose()
-            {
-                ThrowIfDisposed();
-
-                isDisposed = true;
-
-                var contextReference = new WeakReference(this._context, trackResurrection: true);
-                this._context.Unload();
-
-                _reflectionContext.Dispose();
-
-                _context = null;
-                _reflectionContext = null;
-
-                // AssemblyLoadContext unloading is an asynchronous operation
-                for (int i = 0; contextReference.IsAlive && i < 10; i++)
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
-            }
-
-            public Assembly LoadAssembly(string assemblyString)
-            {
-                ThrowIfDisposed();
-
-                var assemblyName = new AssemblyName(assemblyString);
-                assemblyName.CultureInfo = System.Globalization.CultureInfo.InvariantCulture;
-
-                Console.WriteLine($"[LoadFromAssemblyPath] {assemblyString}");
-                return _context.LoadFromAssemblyName(assemblyName);
-            }
-
-            public Assembly LoadFromAssemblyPath(string assemblyPath)
-            {
-                ThrowIfDisposed();
-
-                Console.WriteLine($"[LoadFromAssemblyPath] {assemblyPath}");
-                return _context.LoadFromAssemblyPath(assemblyPath);
-            }
-
-            public Assembly LoadFromAssemblyName(AssemblyName assemblyName)
-            {
-                ThrowIfDisposed();
-
-                Console.WriteLine($"[LoadFromAssemblyName] {assemblyName.Name}");
-                return _context.LoadFromAssemblyName(assemblyName);
-            }
-
-            public Assembly ReflectionOnlyLoadFromAssemblyName(AssemblyName assemblyName)
-            {
-                ThrowIfDisposed();
-
-                Console.WriteLine($"[ReflectionOnlyLoadFromAssemblyName] {assemblyName.Name}");
-                return _reflectionContext.LoadFromAssemblyName(assemblyName);
-            }
-
-            public Assembly ReflectionOnlyLoad(string assemblyString)
-            {
-                ThrowIfDisposed();
-
-                var assemblyName = new AssemblyName(assemblyString);
-                assemblyName.CultureInfo = System.Globalization.CultureInfo.InvariantCulture;
-
-                Console.WriteLine($"[ReflectionOnlyLoad] {assemblyString}");
-                return _reflectionContext.LoadFromAssemblyName(assemblyName);
-            }
-
-            public Assembly ReflectionOnlyLoadFromPath(string assemblyPath)
-            {
-                ThrowIfDisposed();
-
-                Console.WriteLine($"[ReflectionOnlyLoadFromPath] {assemblyPath}");
-                return _reflectionContext.LoadFromAssemblyPath(assemblyPath);
             }
         }
     }

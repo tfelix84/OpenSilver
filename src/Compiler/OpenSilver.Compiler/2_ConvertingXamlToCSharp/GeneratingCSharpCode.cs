@@ -45,7 +45,7 @@ namespace DotNetForHtml5.Compiler
             string sourceFile,
             string fileNameWithPathRelativeToProjectRoot,
             string assemblyNameWithoutExtension,
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain,
+            IReflectionContext reflectionOnSeparateAppDomain,
             bool isFirstPass,
             bool isSLMigration,
             string codeToPutInTheInitializeComponentOfTheApplicationClass,
@@ -67,7 +67,7 @@ namespace DotNetForHtml5.Compiler
             string fileNameWithPathRelativeToProjectRoot,
             string assemblyNameWithoutExtension,
             bool isSLMigration,
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+            IReflectionContext reflectionOnSeparateAppDomain)
         {
             HashSet<string> listOfAllTheTypesUsedInThisXamlFile = new HashSet<string>();
             List<string> resultingFieldsForNamedElements = new List<string>();
@@ -155,7 +155,7 @@ namespace DotNetForHtml5.Compiler
             string sourceFile,
             string fileNameWithPathRelativeToProjectRoot,
             string assemblyNameWithoutExtension,
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain,
+            IReflectionContext reflectionOnSeparateAppDomain,
             bool isSLMigration,
             string codeToPutInTheInitializeComponentOfTheApplicationClass,
             ILogger logger)
@@ -1280,7 +1280,7 @@ dependencyPropertyPath);
         /// <param name="element"></param>
         /// <param name="reflectionOnSeparateAppDomain"></param>
         /// <returns></returns>
-        private static string GeneratePropertyPathFromAttributeValue(string attributeValue, XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        private static string GeneratePropertyPathFromAttributeValue(string attributeValue, XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string propertyPath = "";
             List<string> propertyPathSplittedInBlocks = SplitStoryboardTargetPropertyInBlocks(attributeValue, keepParenthesis: true);
@@ -1385,7 +1385,7 @@ dependencyPropertyPath);
         /// <param name="targetPropertyPathRootElement">The uniqe name of the element whose name has been set in TargetName</param>
         /// <param name="reflectionOnSeparateAppDomain"></param>
         /// <returns></returns>
-        private static void GenerateCodeForStoryboardAccessToPropertyFromTargetRoot(string namespaceName, string assemblyNameIfAny, string propertyPath, string accessorsUniqueNamePart, List<string> resultingMethods, XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, string namespaceSystemWindows)
+        private static void GenerateCodeForStoryboardAccessToPropertyFromTargetRoot(string namespaceName, string assemblyNameIfAny, string propertyPath, string accessorsUniqueNamePart, List<string> resultingMethods, XElement element, IReflectionContext reflectionOnSeparateAppDomain, string namespaceSystemWindows)
         {
             if (propertyPath == null)
             {
@@ -1479,7 +1479,7 @@ public global::System.Object get{0} ({3}.DependencyObject finalTargetInstance)
 }}", accessorsUniqueNamePart, lastPropertyPreparation, lastPropertyFullPath, namespaceSystemWindows));
         }
 
-        static string GenerateStoryboardAccessToPropertyBlockCode(string namespaceName, string assemblyNameIfAny, string block, string blockRootElement, string currentVarName, int blockIndex, string dependencyPropertyVarName, string indexName, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, string namespaceSystemWindows)
+        static string GenerateStoryboardAccessToPropertyBlockCode(string namespaceName, string assemblyNameIfAny, string block, string blockRootElement, string currentVarName, int blockIndex, string dependencyPropertyVarName, string indexName, IReflectionContext reflectionOnSeparateAppDomain, string namespaceSystemWindows)
         {
             string generatedCode = null;
             string[] splittedBlock = block.Split('.');
@@ -1535,7 +1535,7 @@ var {4} = {2}.GetValue({1});
             return element;
         }
 
-        private static XElement GetRootOfCurrentNamescopeForRuntime(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        private static XElement GetRootOfCurrentNamescopeForRuntime(XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             XElement currentElement = element;
             bool skipTemplateNode = true;
@@ -1595,7 +1595,7 @@ var {4} = {2}.GetValue({1});
             return (-1, -1);
         }
 
-        private static string GenerateCodeToInstantiateXElement(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        private static string GenerateCodeToInstantiateXElement(XElement element, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string namespaceName, typeName, assemblyIfAny;
             GettingInformationAboutXamlTypes.GetClrNamespaceAndLocalName(
@@ -1674,7 +1674,7 @@ var {4} = {2}.GetValue({1});
         private static void PopulateDictionaryThatAssociatesNamesToUniqueNames(XDocument doc,
             Dictionary<XElement, Dictionary<string, string>> namescopeRootToNameToUniqueNameDictionary,
             Dictionary<XElement, Dictionary<string, string>> namescopeRootToElementsUniqueNameToInstantiatedObjects,
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+            IReflectionContext reflectionOnSeparateAppDomain)
         {
             foreach (var element in PostOrderTreeTraversal.TraverseTreeInPostOrder(doc.Root)) // Note: any order is fine here.
             {
@@ -1803,7 +1803,7 @@ var {4} = {2}.GetValue({1});
             None, Collection, Dictionary
         }
 
-        static void GenerateCodeForAddingChildrenToCollectionOrDictionary(Stack<string> codeStack, StringBuilder stringBuilder, EnumerableType enumerableType, string codeToAccessTheEnumerable, XElement elementThatContainsTheChildrenToAdd, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        static void GenerateCodeForAddingChildrenToCollectionOrDictionary(Stack<string> codeStack, StringBuilder stringBuilder, EnumerableType enumerableType, string codeToAccessTheEnumerable, XElement elementThatContainsTheChildrenToAdd, IReflectionContext reflectionOnSeparateAppDomain)
         {
             List<XElement> children = elementThatContainsTheChildrenToAdd.Elements().ToList();
             List<string> childrenCode = PopElementsFromStackAndReadThemInReverseOrder(codeStack, children.Count).ToList();
@@ -1853,7 +1853,7 @@ var {4} = {2}.GetValue({1});
             }
         }
 
-        static string GenerateCodeForSetterProperty(XElement styleElement, string attributeValue, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        static string GenerateCodeForSetterProperty(XElement styleElement, string attributeValue, IReflectionContext reflectionOnSeparateAppDomain)
         {
             bool isAttachedProperty = attributeValue.Contains(".");
             string elementTypeInCSharp, dependencyPropertyName;
@@ -1891,7 +1891,7 @@ var {4} = {2}.GetValue({1});
             return string.Format("{0}.{1}", elementTypeInCSharp, dependencyPropertyName);
         }
 
-        private static XName GetCSharpXNameFromTargetTypeOrAttachedPropertyString(XElement setterElement, bool isAttachedProperty, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        private static XName GetCSharpXNameFromTargetTypeOrAttachedPropertyString(XElement setterElement, bool isAttachedProperty, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string namespaceName;
             string localTypeName;
@@ -1944,7 +1944,7 @@ var {4} = {2}.GetValue({1});
             return reflectionOnSeparateAppDomain.GetCSharpEquivalentOfXamlTypeAsXName(namespaceName, localTypeName, assemblyNameIfAny, ifTypeNotFoundTryGuessing: false);
         }
 
-        static string GetCSharpFullTypeNameFromTargetTypeString(XElement styleElement, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, bool isDataType = false)
+        static string GetCSharpFullTypeNameFromTargetTypeString(XElement styleElement, IReflectionContext reflectionOnSeparateAppDomain, bool isDataType = false)
         {
             string namespaceName;
             string localTypeName;
@@ -1958,7 +1958,7 @@ var {4} = {2}.GetValue({1});
             return elementTypeInCSharp;
         }
 
-        static string GetCSharpFullTypeName(string typeString, XElement elementWhereTheTypeIsUsed, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+        static string GetCSharpFullTypeName(string typeString, XElement elementWhereTheTypeIsUsed, IReflectionContext reflectionOnSeparateAppDomain)
         {
             string namespaceName;
             string localTypeName;
@@ -2073,7 +2073,7 @@ return {2};
             }
         }
 
-        static string GetElementXKey(XElement element, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, out bool isImplicitStyle, out bool isImplicitDataTemplate)
+        static string GetElementXKey(XElement element, IReflectionContext reflectionOnSeparateAppDomain, out bool isImplicitStyle, out bool isImplicitDataTemplate)
         {
             isImplicitStyle = false;
             isImplicitDataTemplate = false;
@@ -2184,7 +2184,7 @@ public static void Main()
             return finalCode;
         }
 
-        static void GetClassInformationFromXaml(XDocument doc, string fileNameWithPathRelativeToProjectRoot, string assemblyNameWithoutExtension, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, out string className, out string namespaceStringIfAny, out string baseType, out bool hasCodeBehind)
+        static void GetClassInformationFromXaml(XDocument doc, string fileNameWithPathRelativeToProjectRoot, string assemblyNameWithoutExtension, IReflectionContext reflectionOnSeparateAppDomain, out string className, out string namespaceStringIfAny, out string baseType, out bool hasCodeBehind)
         {
             // Read the "{x:Class}" attribute:
             XAttribute classAttributeIfAny = doc.Root.Attribute(xNamespace + "Class");
@@ -2226,7 +2226,7 @@ public static void Main()
             baseType = reflectionOnSeparateAppDomain.GetCSharpEquivalentOfXamlTypeAsString(namespaceName, localTypeName, assemblyNameIfAny, ifTypeNotFoundTryGuessing: true); // Note: we set "ifTypeNotFoundTryGuessing" to true because the type will not be found during Pass1 for example in the case that tthe root of the XAML file is: <myNamespace:MyCustumUserControlDerivedClass .../>
         }
 
-        private static string GetDefaultValueOfTypeAsString(string namespaceName, string localTypeName, bool isSystemType, ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain, string assemblyIfAny = null)
+        private static string GetDefaultValueOfTypeAsString(string namespaceName, string localTypeName, bool isSystemType, IReflectionContext reflectionOnSeparateAppDomain, string assemblyIfAny = null)
         {
             if (isSystemType)
             {
@@ -2261,7 +2261,7 @@ public static void Main()
             XElement elementWhereTheTypeIsUsed, 
             string fileNameWithPathRelativeToProjectRoot, 
             string assemblyNameWithoutExtension, 
-            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain)
+            IReflectionContext reflectionOnSeparateAppDomain)
         {
             string namespaceName, localTypeName, assemblyNameIfAny;
             GettingInformationAboutXamlTypes.GetClrNamespaceAndLocalName(
