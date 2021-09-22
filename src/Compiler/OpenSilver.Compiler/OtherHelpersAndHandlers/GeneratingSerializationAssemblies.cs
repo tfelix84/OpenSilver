@@ -157,10 +157,10 @@ namespace DotNetForHtml5.Compiler
             string[] typesThatAreSerializable;
 
             // Create the "TypesResolver" on a separate AppDomain so that the types loaded for reflection can be unloaded when done.
-            using (var reflectionOnSeparateAppDomain = new ReflectionOnSeparateAppDomainHandler())
+            using (var reflectionHandler = new ReflectionHandler())
             {
-                string assemblySimpleName = reflectionOnSeparateAppDomain.LoadAssembly(sourceAssembly, loadReferencedAssembliesToo: false, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: "", skipReadingAttributesFromAssemblies: false);
-                string commaSeparatedTypesThatAreSerializable = reflectionOnSeparateAppDomain.FindCommaSeparatedTypesThatAreSerializable(assemblySimpleName);
+                string assemblySimpleName = reflectionHandler.LoadAssembly(sourceAssembly, loadReferencedAssembliesToo: false, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: "", skipReadingAttributesFromAssemblies: false);
+                string commaSeparatedTypesThatAreSerializable = reflectionHandler.FindCommaSeparatedTypesThatAreSerializable(assemblySimpleName);
                 typesThatAreSerializable = commaSeparatedTypesThatAreSerializable.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             }
 

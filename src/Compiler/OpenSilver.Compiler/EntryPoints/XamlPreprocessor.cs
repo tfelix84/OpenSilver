@@ -22,6 +22,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetForHtml5.Compiler
 {
@@ -146,14 +147,11 @@ namespace DotNetForHtml5.Compiler
                         if (shouldTheFileBeProcessed)
                         {
                             // The "ReflectionOnSeparateAppDomainHandler" class lets us use a separate AppDomain to resolve the types so that the types can be unloaded when done (when disposed, it frees any hook on the user application DLL's):
-                            ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain = ReflectionOnSeparateAppDomainHandler.Current; // Note: this is not supposed to be null because it was instantiated in the "BeforeXamlPreprocessor" task. We use a static instance to avoid reloading the assemblies for each XAML file that is processed.
 
-                            // Make sure that the reference is not null:
-                            if (reflectionOnSeparateAppDomain == null)
-                                throw new Exception("ReflectionOnSeparateAppDomainHandler.Current is null. It should not be null because it was supposed to be populated by the 'BeforeXamlPreprocessor' task. Please verify that the MSBuild Targets are up to date.");
+                            var reflectionHandler = ServiceProvider.GetService<ReflectionHandlerFactory>().GetOrCreate();
 
                             // Convert XAML to CS:
-                            string generatedCode = ConvertingXamlToCSharp.Convert(xaml, SourceFile, FileNameWithPathRelativeToProjectRoot, AssemblyNameWithoutExtension, reflectionOnSeparateAppDomain, isFirstPass: !IsSecondPass, isSLMigration: IsSLMigration, outputRootPath: OutputRootPath, outputAppFilesPath: OutputAppFilesPath, outputLibrariesPath: OutputLibrariesPath, outputResourcesPath: OutputResourcesPath, logger: Logger);
+                            string generatedCode = ConvertingXamlToCSharp.Convert(xaml, SourceFile, FileNameWithPathRelativeToProjectRoot, AssemblyNameWithoutExtension, reflectionHandler, isFirstPass: !IsSecondPass, isSLMigration: IsSLMigration, outputRootPath: OutputRootPath, outputAppFilesPath: OutputAppFilesPath, outputLibrariesPath: OutputLibrariesPath, outputResourcesPath: OutputResourcesPath, logger: Logger);
 
                             // Add the header that contains the file hash so as to avoid re-processing the file if not needed:
                             generatedCode = CreateHeaderContainingHash(generatedCode, xaml, IsSecondPass)
@@ -194,7 +192,7 @@ namespace DotNetForHtml5.Compiler
                     issues when the user recompiles his application). So we free them now.
                  */
 
-                ReflectionOnSeparateAppDomainHandler.Current.Dispose(); // Note: this is not supposed to be null because it was instantiated in the "BeforeXamlPreprocessor" task.
+                ServiceProvider.GetService<ReflectionHandlerFactory>().Release();
 
                 //-----------------------------------------------------
                 // Display the error and cancel the Build process:

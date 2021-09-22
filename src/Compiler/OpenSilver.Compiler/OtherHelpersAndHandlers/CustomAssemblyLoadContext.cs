@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 
-namespace OpenSilver.Compiler
+namespace DotNetForHtml5.Compiler
 {
     internal class CustomAssemblyLoadContext : IDisposable
     {

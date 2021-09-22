@@ -174,7 +174,7 @@ namespace DotNetForHtml5.Compiler
             if (!string.IsNullOrEmpty(referenceHintPath))
             {
                 // Perform reflection on a separate AppDomain so that the types loaded for reflection can be unloaded when done.
-                using (var reflectionOnSeparateAppDomain = new ReflectionOnSeparateAppDomainHandler(typeForwardingAssemblyPath))
+                using (var reflectionOnSeparateAppDomain = new ReflectionHandler(typeForwardingAssemblyPath))
                 {
 #if BRIDGE
                     // In the Bridge.NET version, we use "Assembly.LoadFile" instead of "Assembly.LoadFrom", so we need to convert a Relative path into an Absolute path:

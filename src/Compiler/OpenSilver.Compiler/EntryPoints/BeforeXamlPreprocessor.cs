@@ -23,12 +23,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetForHtml5.Compiler
 {
     //[LoadInSeparateAppDomain]
     //[Serializable]
-    public class BeforeXamlPreprocessor : Task // AppDomainIsolatedTask
+    public class BeforeXamlPreprocessor : TaskBase // AppDomainIsolatedTask
     {
         [Required]
         public bool IsSecondPass { get; set; }
@@ -64,40 +65,24 @@ namespace DotNetForHtml5.Compiler
 
         public override bool Execute()
         {
-#if CSHTML5BLAZOR
-            return Execute(IsSecondPass, Flags, ResolvedReferences, SourceAssemblyForPass2, NameOfAssembliesThatDoNotContainUserCode, IsBridgeBasedVersion, IsProcessingCSHTML5Itself, new LoggerThatUsesTaskOutput(this), TypeForwardingAssemblyPath);
-#else
-            return Execute(IsSecondPass, Flags, ReferencesPaths, SourceAssemblyForPass2, NameOfAssembliesThatDoNotContainUserCode, IsBridgeBasedVersion, IsProcessingCSHTML5Itself, new LoggerThatUsesTaskOutput(this), TypeForwardingAssemblyPath);
-#endif
-        }
-
-#if CSHTML5BLAZOR
-        public static bool Execute(bool isSecondPass, string flagsString, ITaskItem[] resolvedReferences, string sourceAssemblyForPass2, string nameOfAssembliesThatDoNotContainUserCode, bool isBridgeBasedVersion, bool isProcessingCSHTML5Itself, ILogger logger, string typeForwardingAssemblyPath)
-#else
-        public static bool Execute(bool isSecondPass, string flagsString, string referencePathsString, string sourceAssemblyForPass2, string nameOfAssembliesThatDoNotContainUserCode, bool isBridgeBasedVersion, bool isProcessingCSHTML5Itself, ILogger logger, string typeForwardingAssemblyPath)
-#endif
-
-        {
-            string passNumber = (isSecondPass ? "2" : "1");
+            string passNumber = (IsSecondPass ? "2" : "1");
             string operationName = string.Format("C#/XAML for HTML5: BeforeXamlPreprocessor (pass {0})", passNumber);
             try
             {
                 using (var executionTimeMeasuring = new ExecutionTimeMeasuring())
                 {
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + " started.");
+                    Logger.WriteMessage(operationName + " started.");
 
                     //-----------------------------------------------------
                     // Note: we create a static instance of the "ReflectionOnSeparateAppDomainHandler" to avoid reloading the assemblies for each XAML file.
                     // We dispose the static instance in the "AfterXamlPreprocessor" task.
                     //-----------------------------------------------------
 
-                    if (isSecondPass && string.IsNullOrEmpty(sourceAssemblyForPass2))
+                    if (IsSecondPass && string.IsNullOrEmpty(SourceAssemblyForPass2))
                         throw new Exception(operationName + " failed because the SourceAssembly parameter was not specified during the second pass.");
 
-                    // Create a new static instance of the "ReflectionOnSeparateAppDomainHandler":
-                    ReflectionOnSeparateAppDomainHandler.Current = new ReflectionOnSeparateAppDomainHandler(typeForwardingAssemblyPath);
-                    ReflectionOnSeparateAppDomainHandler reflectionOnSeparateAppDomain = ReflectionOnSeparateAppDomainHandler.Current;
+                    var reflectionHandler = ServiceProvider.GetService<ReflectionHandlerFactory>().GetOrCreate(TypeForwardingAssemblyPath);
 
 #if BRIDGE
                     //todo: if we are compiling CSHTML5 itself (or CSHTML5.Stubs), we need to process the XAML files in CSHTML5,
@@ -108,13 +93,13 @@ namespace DotNetForHtml5.Compiler
                     // "Skip the assembly if it is not a user assembly" in "LoadAndProcessReferencedAssemblies").
 #endif
                     // we load the source assembly early in case we are processing the CSHTML5.
-                    if (isSecondPass && isProcessingCSHTML5Itself)
+                    if (IsSecondPass && IsProcessingCSHTML5Itself)
                     {
-                        reflectionOnSeparateAppDomain.LoadAssembly(sourceAssemblyForPass2, loadReferencedAssembliesToo: true, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: nameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
+                        reflectionHandler.LoadAssembly(SourceAssemblyForPass2, loadReferencedAssembliesToo: true, isBridgeBasedVersion: IsBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: NameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
                     }
 #if CSHTML5BLAZOR
                     // work-around: reference path string is not correctly setted so we set it manually
-                    string referencePathsString = OpenSilverHelper.ReferencePathsString(resolvedReferences);
+                    string referencePathsString = OpenSilverHelper.ReferencePathsString(ResolvedReferences);
 #endif
                     // Retrieve paths of referenced .dlls and load them:
                     HashSet<string> referencePaths = (referencePathsString != null) ? new HashSet<string>(referencePathsString.Split(';')) : new HashSet<string>();
@@ -129,41 +114,38 @@ namespace DotNetForHtml5.Compiler
                         var coreAssemblyPath = coreAssembliesPaths.FirstOrDefault(path => coreAssemblyName.Equals(Path.GetFileNameWithoutExtension(path), StringComparison.InvariantCultureIgnoreCase));
                         if (coreAssemblyPath != null)
                         {
-                            reflectionOnSeparateAppDomain.LoadAssembly(coreAssemblyPath, loadReferencedAssembliesToo: false, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: nameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
+                            reflectionHandler.LoadAssembly(coreAssemblyPath, loadReferencedAssembliesToo: false, isBridgeBasedVersion: IsBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: NameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
                             referencePaths.Remove(coreAssemblyPath);
                         }
                     }
 
                     foreach (string referencedAssembly in referencePaths)
                     {
-                        reflectionOnSeparateAppDomain.LoadAssembly(referencedAssembly, loadReferencedAssembliesToo: false, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: nameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
+                        reflectionHandler.LoadAssembly(referencedAssembly, loadReferencedAssembliesToo: false, isBridgeBasedVersion: IsBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: NameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
                     }
 
                     // Load "mscorlib.dll" too (this is useful for resolving Mscorlib types in XAML, such as <system:String x:Key="TestString" xmlns:system="clr-namespace:System;assembly=mscorlib">Test</system:String>)
-                    reflectionOnSeparateAppDomain.LoadAssemblyMscorlib(isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: nameOfAssembliesThatDoNotContainUserCode);
+                    reflectionHandler.LoadAssemblyMscorlib(isBridgeBasedVersion: IsBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: NameOfAssembliesThatDoNotContainUserCode);
 
                     // Load for reflection the source assembly itself and the referenced assemblies if second path:
-                    if (isSecondPass && !isProcessingCSHTML5Itself)
+                    if (IsSecondPass && !IsProcessingCSHTML5Itself)
                     {
-                        reflectionOnSeparateAppDomain.LoadAssembly(sourceAssemblyForPass2, loadReferencedAssembliesToo: true, isBridgeBasedVersion: isBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: nameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
+                        reflectionHandler.LoadAssembly(SourceAssemblyForPass2, loadReferencedAssembliesToo: true, isBridgeBasedVersion: IsBridgeBasedVersion, isCoreAssembly: false, nameOfAssembliesThatDoNotContainUserCode: NameOfAssembliesThatDoNotContainUserCode, skipReadingAttributesFromAssemblies: false);
                     }
 
                     bool isSuccess = true;
 
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + (isSuccess ? " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds." : " failed.") + "\". IsSecondPass: " + isSecondPass.ToString() + ". Source assembly file: \"" + (sourceAssemblyForPass2 ?? "").ToString());
+                    Logger.WriteMessage(operationName + (isSuccess ? " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds." : " failed.") + "\". IsSecondPass: " + IsSecondPass.ToString() + ". Source assembly file: \"" + (SourceAssemblyForPass2 ?? "").ToString());
 
                     return isSuccess;
                 }
             }
             catch (Exception ex)
             {
-                if (ReflectionOnSeparateAppDomainHandler.Current != null)
-                {
-                    ReflectionOnSeparateAppDomainHandler.Current.Dispose();
-                }
+                ServiceProvider.GetService<ReflectionHandlerFactory>().Release();
 
-                logger.WriteError(operationName + " failed: " + ex.ToString());
+                Logger.WriteError(operationName + " failed: " + ex.ToString());
                 return false;
             }
         }

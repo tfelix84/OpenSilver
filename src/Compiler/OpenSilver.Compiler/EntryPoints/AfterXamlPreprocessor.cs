@@ -21,12 +21,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetForHtml5.Compiler
 {
     //[LoadInSeparateAppDomain]
     //[Serializable]
-    public class AfterXamlPreprocessor : Task // AppDomainIsolatedTask
+    public class AfterXamlPreprocessor : TaskBase // AppDomainIsolatedTask
     {
         [Required]
         public bool IsSecondPass { get; set; }
@@ -36,40 +37,34 @@ namespace DotNetForHtml5.Compiler
 
         public override bool Execute()
         {
-            return Execute(IsSecondPass, new LoggerThatUsesTaskOutput(this));
-        }
-
-        public static bool Execute(bool isSecondPass, ILogger logger)
-        {
-            string passNumber = (isSecondPass ? "2" : "1");
+            string passNumber = (IsSecondPass ? "2" : "1");
             string operationName = string.Format("C#/XAML for HTML5: AfterXamlPreprocessor (pass {0})", passNumber);
             try
             {
                 using (var executionTimeMeasuring = new ExecutionTimeMeasuring())
                 {
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + " started.");
+                    Logger.WriteMessage(operationName + " started.");
 
                     //-----------------------------------------------------
                     // Note: we dispose the static instance of the "ReflectionOnSeparateAppDomainHandler" that was created in the "BeforeXamlPreprocessor" task.
                     // Disposing it allows to free any hooks on the user app DLL's.
                     //-----------------------------------------------------
-
-                    // Dispose the static instance of the "ReflectionOnSeparateAppDomainHandler":
-                    ReflectionOnSeparateAppDomainHandler.Current.Dispose(); // Note: this is not supposed to be null because it was instantiated in the "BeforeXamlPreprocessor" task.
+                    var factory = ServiceProvider.GetService<ReflectionHandlerFactory>();
+                    factory.Release();
 
 
                     bool isSuccess = true;
 
                     //------- DISPLAY THE PROGRESS -------
-                    logger.WriteMessage(operationName + (isSuccess ? " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds." : " failed."));
+                    Logger.WriteMessage(operationName + (isSuccess ? " completed in " + executionTimeMeasuring.StopAndGetTimeInSeconds() + " seconds." : " failed."));
 
                     return isSuccess;
                 }
             }
             catch (Exception ex)
             {
-                logger.WriteError(operationName + " failed: " + ex.ToString());
+                Logger.WriteError(operationName + " failed: " + ex.ToString());
                 return false;
             }
         }

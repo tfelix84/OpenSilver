@@ -22,11 +22,40 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 using System.Xaml;
-using OpenSilver.Compiler;
 
 namespace DotNetForHtml5.Compiler
 {
-    internal class ReflectionOnSeparateAppDomainHandler : IReflectionContext, IDisposable
+    public class ReflectionHandlerFactory : IDisposable
+    {
+        private ReflectionHandler _instance;
+
+        public IReflectionContext GetOrCreate(string typeForwardingAssemblyPath = null)
+        {
+            if (_instance is null)
+            {
+                _instance = new ReflectionHandler(typeForwardingAssemblyPath);
+            }
+
+            return _instance;
+        }
+
+        public void Release()
+        {
+            // This is flawed : What if the object is disposed directly?
+            if (_instance != null)
+            {
+                _instance.Dispose();
+                _instance = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            this.Release();
+        }
+    }
+
+    internal class ReflectionHandler : IReflectionContext, IDisposable
     {
         //Note: we use a new AppDomain so that we can Unload all the assemblies that we have inspected when we have done.
 
@@ -37,9 +66,6 @@ namespace DotNetForHtml5.Compiler
         //----------------------------------------------------------------------
 
         const string ASSEMBLY_NOT_IN_LIST_OF_LOADED_ASSEMBLIES = "The specified assembly is not in the list of loaded assemblies.";
-
-
-        public static ReflectionOnSeparateAppDomainHandler Current;
 
         private readonly CustomAssemblyLoadContext _loadContext;
 
@@ -61,7 +87,7 @@ namespace DotNetForHtml5.Compiler
 #endif
 
 
-        public ReflectionOnSeparateAppDomainHandler(string typeForwardingAssemblyPath = null)
+        public ReflectionHandler(string typeForwardingAssemblyPath = null)
         {
             _loadContext = new CustomAssemblyLoadContext();
 
@@ -173,13 +199,16 @@ namespace DotNetForHtml5.Compiler
 #endif
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
+        private bool isDisposed;
+
         public void Dispose()
         {
-            this.ClearCache();
-            _loadContext.Dispose();
+            if (!isDisposed)
+            {
+                isDisposed = true;
+                this.ClearCache();
+                _loadContext.Dispose();
+            }
         }
 
         public string LoadAssembly(string assemblyPath, bool loadReferencedAssembliesToo, bool isBridgeBasedVersion, bool isCoreAssembly, string nameOfAssembliesThatDoNotContainUserCode, bool skipReadingAttributesFromAssemblies)

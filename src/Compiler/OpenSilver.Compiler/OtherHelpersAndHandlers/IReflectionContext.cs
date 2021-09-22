@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 
-namespace OpenSilver.Compiler
+namespace DotNetForHtml5.Compiler
 {
     public interface IReflectionContext : IDisposable
     {
