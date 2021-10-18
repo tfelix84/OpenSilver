@@ -463,7 +463,7 @@ namespace DotNetForHtml5.Compiler
 
     @"
             {6}System.ServiceModel.INTERNAL_WebMethodsCaller.{8}CallWebMethod{0}{7}
-                <{1}{2}>({9}, ""{3}"", {4}, ""{10}"");
+                <{1}{2}>({11} {9}, ""{3}"", {4}, ""{10}"");
 ",
      ((methodType == MethodType.AsyncWithoutReturnType || methodType == MethodType.AsyncWithReturnType) ? "Async" : string.Empty),
      ((methodType == MethodType.AsyncWithReturnType || methodType == MethodType.NotAsyncWithReturnType || methodType == MethodType.AsyncBegin || methodType == MethodType.AsyncEndWithReturnType) ? returnType + ", " : ""),
@@ -475,7 +475,8 @@ namespace DotNetForHtml5.Compiler
      ((methodType == MethodType.AsyncWithoutReturnType || methodType == MethodType.NotAsyncWithoutReturnType || methodType == MethodType.AsyncEndWithoutReturnType) ? "_WithoutReturnValue" : ""),
      ((methodType == MethodType.AsyncBegin ? "Begin" : "") + (methodType == MethodType.AsyncEndWithoutReturnType || methodType == MethodType.AsyncEndWithReturnType ? "End" : "")),
      endpointCode,
-     soapVersion
+     soapVersion,
+     ((methodType == MethodType.AsyncEndWithoutReturnType || methodType == MethodType.AsyncEndWithReturnType ? "" : "this, ")) //this is {11}, we only want to add this as a parameter if we are before the request to the server, I don't think there is any use for it otherwise and it would need more changes in WebMethodsCaller.
      );
                 }
                 else //case where there are no parameters
@@ -485,7 +486,7 @@ namespace DotNetForHtml5.Compiler
                     newBody = string.Format(
     @"
             {6}System.ServiceModel.INTERNAL_WebMethodsCaller.{8}CallWebMethod{0}{7}
-                <{1}{2}>({9}, ""{3}"", {4}, ""{10}"");
+                <{1}{2}>({11} {9}, ""{3}"", {4}, ""{10}"");
 ",
      ((methodType == MethodType.AsyncWithoutReturnType || methodType == MethodType.AsyncWithReturnType) ? "Async" : string.Empty),
      ((methodType == MethodType.AsyncWithReturnType || methodType == MethodType.NotAsyncWithReturnType || methodType == MethodType.AsyncBegin || methodType == MethodType.AsyncEndWithReturnType) ? returnType + ", " : ""),
@@ -497,7 +498,8 @@ namespace DotNetForHtml5.Compiler
      ((methodType == MethodType.AsyncWithoutReturnType || methodType == MethodType.NotAsyncWithoutReturnType || methodType == MethodType.AsyncEndWithoutReturnType) ? "_WithoutReturnValue" : ""),
      ((methodType == MethodType.AsyncBegin ? "Begin" : "") + (methodType == MethodType.AsyncEndWithoutReturnType || methodType == MethodType.AsyncEndWithReturnType ? "End" : "")),
      endpointCode,
-     soapVersion
+     soapVersion,
+     ((methodType == MethodType.AsyncEndWithoutReturnType || methodType == MethodType.AsyncEndWithReturnType ? "" : "this, ")) //this is {11}, we only want to add this as a parameter if we are before the request to the server, I don't think there is any use for it otherwise and it would need more changes in WebMethodsCaller.
      );
                 }
                 block = block.Replace(methodBodyToReplace, newBody);

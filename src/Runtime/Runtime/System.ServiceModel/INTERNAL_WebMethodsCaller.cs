@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,12 +49,31 @@ namespace System.ServiceModel
         // WCF METHODS WHICH RETURN A VALUE
         //------------------------------------------
 
+        static string GetAddressHeadersStringReadyForRequest(AddressHeaderCollection headers)
+        {
+            string addressHeaders = null;
+            //Note: AddressHeaders are added as follows in the request: <NameHere xmlns="NamespaceHere">ValueHere</ID>
+            foreach (AddressHeader header in headers)
+            {
+                addressHeaders += string.Format(@"<{0} xmlns=""{1}"">{2}</{0}>", header.Name, header.Namespace, header.GetValueAsString());
+            }
+            return addressHeaders;
+        }
+
         public static Task<RETURN_TYPE> CallWebMethodAsync<RETURN_TYPE, INTERFACE_TYPE>(
+            CSHTML5_ClientBase<INTERFACE_TYPE> clientBase,
             string endpointAddress,
             string webMethodName,
             IDictionary<string, object> requestParameters,
             string soapVersion) where INTERFACE_TYPE : class
         {
+            //Get the AddressHeaders as a string:
+            string addressHeaders = null;
+            if(clientBase.Endpoint != null && clientBase.Endpoint.Address != null && clientBase.Endpoint.Address.Headers != null) //Note: Endpoint should never be null as far as I know but since not all constructors of ClientBase are implemented, I cannot be sure.
+            {
+                addressHeaders = GetAddressHeadersStringReadyForRequest(clientBase.Endpoint.Address.Headers);
+            }
+
             // Call the web method
             var webMethodsCaller = new CSHTML5_ClientBase<INTERFACE_TYPE>.WebMethodsCaller(endpointAddress);
 
@@ -64,6 +84,7 @@ namespace System.ServiceModel
                     webMethodName,
                     typeof(INTERFACE_TYPE),
                     typeof(RETURN_TYPE),
+                    addressHeaders,
                     requestParameters,
                     soapVersion);
             }
@@ -73,6 +94,7 @@ namespace System.ServiceModel
                     webMethodName,
                     typeof(INTERFACE_TYPE),
                     typeof(RETURN_TYPE),
+                    addressHeaders,
                     requestParameters,
                     soapVersion);
             }
@@ -138,17 +160,26 @@ namespace System.ServiceModel
 #endif
 
         public static RETURN_TYPE CallWebMethod<RETURN_TYPE, INTERFACE_TYPE>(
+            CSHTML5_ClientBase<INTERFACE_TYPE> clientBase,
             string endpointAddress,
             string webMethodName,
             IDictionary<string, object> requestParameters,
             string soapVersion) where INTERFACE_TYPE : class
         {
+            //Get the AddressHeaders as a string:
+            string addressHeaders = null;
+            if(clientBase.Endpoint != null && clientBase.Endpoint.Address != null && clientBase.Endpoint.Address.Headers != null) //Note: Endpoint should never be null as far as I know but since not all constructors of ClientBase are implemented, I cannot be sure.
+            {
+                addressHeaders = GetAddressHeadersStringReadyForRequest(clientBase.Endpoint.Address.Headers);
+            }
+
             var webMethodsCaller = new CSHTML5_ClientBase<INTERFACE_TYPE>.WebMethodsCaller(endpointAddress);
 
             return (RETURN_TYPE)webMethodsCaller.CallWebMethod(
                 webMethodName,
                 typeof(INTERFACE_TYPE),
                 typeof(RETURN_TYPE),
+                addressHeaders,
                 requestParameters,
                 soapVersion);
         }
@@ -212,6 +243,9 @@ namespace System.ServiceModel
            IDictionary<string, object> requestParameters,
            string soapVersion) where INTERFACE_TYPE : class
         {
+            //todo: is this one still useful?
+
+
             return BeginCallWebMethod<INTERFACE_TYPE>(
                 endpointAddress,
                 webMethodName,
@@ -222,15 +256,24 @@ namespace System.ServiceModel
         }
 
         public static IAsyncResult BeginCallWebMethod<RETURN_TYPE, INTERFACE_TYPE>(
+            CSHTML5_ClientBase<INTERFACE_TYPE> clientBase,
             string endpointAddress,
             string webMethodName,
             IDictionary<string, object> requestParameters,
             string soapVersion) where INTERFACE_TYPE : class
         {
+            //Get the AddressHeaders as a string:
+            string addressHeaders = null;
+            if (clientBase.Endpoint != null && clientBase.Endpoint.Address != null && clientBase.Endpoint.Address.Headers != null) //Note: Endpoint should never be null as far as I know but since not all constructors of ClientBase are implemented, I cannot be sure.
+            {
+                addressHeaders = GetAddressHeadersStringReadyForRequest(clientBase.Endpoint.Address.Headers);
+            }
+
             return BeginCallWebMethod<INTERFACE_TYPE>(
                 endpointAddress,
                 webMethodName,
                 typeof(RETURN_TYPE),
+                addressHeaders,
                 requestParameters,
                 soapVersion);
         }
@@ -296,13 +339,16 @@ namespace System.ServiceModel
         //------------------------------------------
 
         public static Task CallWebMethodAsync_WithoutReturnValue<INTERFACE_TYPE>(
+            CSHTML5_ClientBase<INTERFACE_TYPE> clientBase,
             string endpointAddress,
             string webMethodName,
             IDictionary<string, object> requestParameters,
             string soapVersion) where INTERFACE_TYPE : class
         {
+
             // The following call works fine because "Task<object>" inherits from "Task".
             return CallWebMethodAsync<object, INTERFACE_TYPE>(
+                clientBase,
                 endpointAddress,
                 webMethodName,
                 requestParameters,
@@ -343,12 +389,14 @@ namespace System.ServiceModel
 #endif
 
         public static void CallWebMethod_WithoutReturnValue<INTERFACE_TYPE>(
+            CSHTML5_ClientBase<INTERFACE_TYPE> clientBase,
             string endpointAddress,
             string webMethodName,
             IDictionary<string, object> requestParameters,
             string soapVersion) where INTERFACE_TYPE : class
         {
             CallWebMethod<object, INTERFACE_TYPE>(
+                clientBase,
                 endpointAddress,
                 webMethodName,
                 requestParameters,

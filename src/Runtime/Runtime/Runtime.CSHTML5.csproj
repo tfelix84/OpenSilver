@@ -118,7 +118,9 @@
     <Compile Include="System.Net\WORKINPROGRESS\WebRequest.cs" />
     <Compile Include="System.Reflection\ICustomTypeProvider.cs" />
     <Compile Include="System.Resources\ResourceManager.cs" />
+    <Compile Include="System.ServiceModel.Channels\AddressHeaderCollection.cs" />
     <Compile Include="System.ServiceModel.Channels\WORKINPROGRESS\IHttpCookieContainerManager.cs" />
+    <Compile Include="System.ServiceModel.Description\ServiceEndpoint.cs" />
     <Compile Include="System.ServiceModel\CommunicationException.cs" />
     <Compile Include="System.Windows.Browser\EventSubscriber.cs" />
     <Compile Include="System.Windows.Browser\HttpUtility.CSHTML5.cs" />

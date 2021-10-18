@@ -39,6 +39,7 @@ using System.Xml.Linq;
 using System.Xml;
 using CSHTML5.Internal;
 using static System.ServiceModel.INTERNAL_WebMethodsCaller;
+using System.ServiceModel.Description;
 
 #if MIGRATION
 using System.Windows;
@@ -105,7 +106,17 @@ namespace System.ServiceModel
         public System.ServiceModel.Description.ServiceEndpoint Endpoint { get; } = new Description.ServiceEndpoint(new Description.ContractDescription("none"));
         public System.ServiceModel.Description.ClientCredentials ClientCredentials { get; } = new Description.ClientCredentials();
 #endif
+        
         string _remoteAddressAsString;
+
+        //
+        // Summary:
+        //     Gets the target endpoint for the service to which the Silverlight 5 client can
+        //     connect.
+        //
+        // Returns:
+        //     The target System.ServiceModel.Description.ServiceEndpoint object.
+        public ServiceEndpoint Endpoint { get; }
 
         private TChannel channel;
         public TChannel Channel
@@ -338,6 +349,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                                       contractConfigurationName));
                 }
             }
+            Endpoint = new ServiceEndpoint() { Address = new EndpointAddress(_remoteAddressAsString) };
         }
 
         private static bool TryReadEndpoint(
@@ -433,6 +445,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
             }
 
             _remoteAddressAsString = remoteAddress.Uri.OriginalString;
+            Endpoint = new ServiceEndpoint() { Address = remoteAddress };
 
             //todo: finish the implementation.
         }
@@ -631,6 +644,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                 string webMethodName,
                 Type interfaceType,
                 Type methodReturnType,
+                string addressHeader,
                 IDictionary<string, object> originalRequestObject,
                 string soapVersion)
             {
@@ -660,6 +674,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                     webMethodName,
                     interfaceType,
                     methodReturnType,
+                    addressHeader,
                     originalRequestObject,
                     (xmlReturnedFromTheServer) =>
                     {
@@ -806,6 +821,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                 string webMethodName,
                 Type interfaceType,
                 Type methodReturnType,
+                string addressHeaders,
                 IDictionary<string, object> originalRequestObject,
                 string soapVersion) // Note: we don't arrive here using c#
             {
@@ -821,7 +837,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                     method,
                     interfaceType,
                     methodReturnType,
-                    null,
+                    addressHeaders,
                     originalRequestObject,
                     soapVersion,
                     isXmlSerializer,
@@ -866,6 +882,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                 string webMethodName,
                 Type interfaceType,
                 Type methodReturnType,
+                string addressHeaders,
                 IDictionary<string, object> originalRequestObject,
                 string soapVersion) // Note: we don't arrive here using c#.
             {
@@ -914,7 +931,7 @@ EndOperationDelegate endDelegate, SendOrPostCallback completionCallback)
                     method,
                     interfaceType,
                     methodReturnType,
-                    "",
+                    addressHeaders,
                     originalRequestObject,
                     soapVersion,
                     isXmlSerializer,

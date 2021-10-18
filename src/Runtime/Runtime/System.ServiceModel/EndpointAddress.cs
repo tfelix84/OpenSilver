@@ -35,7 +35,26 @@ namespace System.ServiceModel
             get { return _uri; }
             protected set { _uri = value; }
         }
-       
+
+        //
+        // Summary:
+        //     Gets the collection of address headers for the endpoints that the builder can
+        //     create.
+        //
+        // Returns:
+        //     The System.ServiceModel.Channels.AddressHeaderCollection that contains address
+        //     information for the endpoint.
+        private AddressHeaderCollection _headers;
+
+        public AddressHeaderCollection Headers
+        {
+            get
+            {
+                return _headers;
+            }
+        }
+
+
         /// <summary>
         /// Initializes a new instance of the System.ServiceModel.EndpointAddress class
         /// with a specified URI and headers.
@@ -48,6 +67,7 @@ namespace System.ServiceModel
         public EndpointAddress(Uri uri, params AddressHeader[] addressHeaders)
         {
             _uri = uri;
+            _headers = new AddressHeaderCollection(addressHeaders);
         }
 
         public EndpointAddress(string uri)
