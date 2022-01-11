@@ -145,7 +145,7 @@ public static class INTERNAL_BridgeWorkarounds
         ticks *= 10000000; // 10 000 000 ticks per second
         ticks += fractionalSeconds;
 
-        if(signKeeper == -1)
+        if (signKeeper == -1)
         {
             if (canBeNegative)
             {
@@ -303,12 +303,25 @@ public static class INTERNAL_BridgeWorkarounds
         }
 
         MethodInfo getMethod = propertyInfo.GetMethod;
-        if (getMethod != null && getMethod.IsPublic)
+        if (getMethod != null)
         {
-            return getMethod;
+#if !OPENSILVER
+            if(Interop.IsRunningInTheSimulator)
+            {
+                return getMethod;
+            }
+#endif
+            if (GetIsPublic(getMethod))
+            {
+                return getMethod;
+            }
         }
-        
+
         return null;
+    }
+    static bool GetIsPublic(MethodInfo methodInfo)
+    {
+        return methodInfo.IsPublic;
     }
 
     public static MethodInfo GetSetMethod(this PropertyInfo propertyInfo)
@@ -319,9 +332,18 @@ public static class INTERNAL_BridgeWorkarounds
         }
 
         MethodInfo setMethod = propertyInfo.SetMethod;
-        if (setMethod != null && setMethod.IsPublic)
+        if (setMethod != null)
         {
-            return setMethod;
+#if !OPENSILVER
+            if (Interop.IsRunningInTheSimulator)
+            {
+                return setMethod;
+            }
+#endif
+            if (GetIsPublic(setMethod))
+            {
+                return setMethod;
+            }
         }
 
         return null;
