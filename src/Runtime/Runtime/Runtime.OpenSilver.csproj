@@ -96,8 +96,6 @@
 		<Compile Include="System.Windows.Browser\EventSubscriber.cs" />
 		<Compile Include="System.Windows.Controls.Primitives\Selector.InternalSelectedItemsStorage.cs" />
 		<Compile Include="System.Windows.Controls.Primitives\Selector.SelectionChanger.cs" />
-		<Compile Include="System.Windows.Controls.Primitives\WORKINPROGRESS\Clipper.cs" />
-		<Compile Include="System.Windows.Controls.Primitives\WORKINPROGRESS\LinearClipper.cs" />
 		<Compile Include="System.Windows.Controls\CalendarDayButton.cs" />
 		<Compile Include="System.Windows.Controls\CleanUpVirtualizedItemEventArgs.cs" />
 		<Compile Include="System.Windows.Controls\DataPager\DataPager.cs" />
@@ -119,6 +117,15 @@
 		<Compile Include="System.Windows.Controls\ItemsControl.ItemInfo.cs" />
 		<Compile Include="System.Windows.Controls\LayoutTransformer.cs" />
 		<Compile Include="System.Windows.Controls\PasswordBoxView.cs" />
+		<Compile Include="System.Windows.Controls\Rating\Clipper.cs" />
+		<Compile Include="System.Windows.Controls\Rating\EnumerableFunctions.cs" />
+		<Compile Include="System.Windows.Controls\Rating\LinearClipper.cs" />
+		<Compile Include="System.Windows.Controls\Rating\NullableConverter.cs" />
+		<Compile Include="System.Windows.Controls\Rating\Rating.cs" />
+		<Compile Include="System.Windows.Controls\Rating\RatingAutomationPeer.cs" />
+		<Compile Include="System.Windows.Controls\Rating\RatingItem.cs" />
+		<Compile Include="System.Windows.Controls\Rating\RatingItemAutomationPeer.cs" />
+		<Compile Include="System.Windows.Controls\Rating\RatingSelectionMode.cs" />
 		<Compile Include="System.Windows.Controls\RoutedPropertyChangingEventHandler.cs" />
 		<Compile Include="System.Windows.Controls\SelectedItemCollection.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\CalendarButton.cs" />
@@ -129,8 +136,6 @@
 		<Compile Include="System.Windows.Media\MediaElementState.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\NotifyEventArgs.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\RangeTimePickerPopup.cs" />
-		<Compile Include="System.Windows.Controls\WORKINPROGRESS\Rating.cs" />
-		<Compile Include="System.Windows.Controls\WORKINPROGRESS\RatingItem.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\ShortTimeFormat.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\TransitioningContentControl.cs" />
 		<Compile Include="System.Windows.Controls\WORKINPROGRESS\TreeViewConnectingLines.cs" />
@@ -1295,6 +1300,14 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\OpenSilver.Xaml\OpenSilver.Xaml.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Include="System.Windows.Controls\Rating\Rating.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	  <Page Include="System.Windows.Controls\Rating\RatingItem.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<!-- See ths comment on the first <Import> -->
