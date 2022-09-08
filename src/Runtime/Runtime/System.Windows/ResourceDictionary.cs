@@ -78,7 +78,7 @@ namespace Windows.UI.Xaml
 #if BRIDGE
         // The object that becomes the InheritanceContext of all eligible
         // values in the dictionary - typically the principal owner of the dictionary.        
-        private DependencyObject _inheritanceContext;
+        private WeakReference _inheritanceContext;
 #else
         // We store a weak reference so that the dictionary does not leak the owner.
         private WeakReference _inheritanceContext;
@@ -564,7 +564,7 @@ namespace Windows.UI.Xaml
                 if (inheritanceContext != null)
                 {
 #if BRIDGE
-                    this._inheritanceContext = inheritanceContext;
+                    this._inheritanceContext = new WeakReference(inheritanceContext);
 #else
                     this._inheritanceContext = new WeakReference(inheritanceContext);
 #endif
@@ -576,7 +576,7 @@ namespace Windows.UI.Xaml
                 {
                     // if the first owner is ineligible, use a dummy
 #if BRIDGE
-                    this._inheritanceContext = DummyInheritanceContext;
+                    this._inheritanceContext = new WeakReference(DummyInheritanceContext);
 #else
                     this._inheritanceContext = new WeakReference(DummyInheritanceContext);
 #endif
@@ -1011,7 +1011,9 @@ namespace Windows.UI.Xaml
             get
             {
 #if BRIDGE
-                return this._inheritanceContext;
+                return (_inheritanceContext != null)
+                    ? (DependencyObject)_inheritanceContext.Target
+                    : null;
 #else
                 return (_inheritanceContext != null)
                     ? (DependencyObject)_inheritanceContext.Target

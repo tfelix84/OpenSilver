@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections;
+#if !OPENSILVER
+using System.Collections.ObjectModel;
+#endif
 
 namespace OpenSilver.Internal
 {
@@ -16,7 +19,11 @@ namespace OpenSilver.Internal
     /// </remarks>
     internal struct WeakReferenceListEnumerator : IEnumerator
     {
-        public WeakReferenceListEnumerator(ArrayList List)
+#if OPENSILVER
+        public WeakReferenceListEnumerator(ArrayList List) 
+#else //BRIDGE
+        public WeakReferenceListEnumerator(ReadOnlyCollection<object> List)
+#endif
         {
             _i = 0;
             _List = List;
@@ -60,7 +67,7 @@ namespace OpenSilver.Internal
         }
 
         int _i;
-        ArrayList _List;
+        ReadOnlyCollection<object> _List;
         object _StrongReference;
     }
 }

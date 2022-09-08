@@ -34,7 +34,7 @@ namespace CSHTML5
     internal static class INTERNAL_InteropImplementation
     {
         private static bool IsJavaScriptCSharpInteropSetUp;
-        private static Dictionary<int, Delegate> CallbacksDictionary = new Dictionary<int, Delegate>();
+        private static Dictionary<int, WeakReference> CallbacksDictionary = new Dictionary<int, WeakReference>();
         private static Random RandomGenerator = new Random();
         private static List<string> UnmodifiedJavascriptCalls = new List<string>();
         private static int IndexOfNextUnmodifiedJSCallInList = 0;
@@ -146,7 +146,7 @@ namespace CSHTML5
 
                     // Add the callback to the document:
                     int callbackId = ReferenceIDGenerator.GenerateId();
-                    CallbacksDictionary.Add(callbackId, callback);
+                    CallbacksDictionary.Add(callbackId, new WeakReference(callback));
 
                     var isVoid = callback.Method.ReturnType == typeof(void);
 

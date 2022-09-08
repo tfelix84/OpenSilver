@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+#if !OPENSILVER
+using System.Collections.Generic;
+#endif
 
 namespace OpenSilver.Internal
 {
@@ -36,16 +40,29 @@ namespace OpenSilver.Internal
         ///    1) Checking _readonlyWrapper and copying the list before modifing it.
         ///    2) Clearing _readonlyWrapper.
         /// </summary>
-        public ArrayList List
+#if OPENSILVER
+        public ArrayList List 
+#else //BRIDGE
+        public ReadOnlyCollection<object> List
+
+#endif
         {
             get
             {
-                ArrayList tempList;
+#if OPENSILVER
+                ArrayList tempList; 
+#else //BRIDGE
+                ReadOnlyCollection<object> tempList;
+#endif
 
                 lock (_syncRoot)
                 {
                     if (null == _readonlyWrapper)
-                        _readonlyWrapper = ArrayList.ReadOnly(_LiveList);
+#if OPENSILVER
+                        _readonlyWrapper = ArrayList.ReadOnly(_LiveList); 
+#else //BRIDGE
+                        _readonlyWrapper = _LiveList.AsReadOnly();
+#endif
                     tempList = _readonlyWrapper;
                 }
                 return tempList;
@@ -107,7 +124,12 @@ namespace OpenSilver.Internal
         ///  any copy on write protection.  So the caller must really know what
         ///  they are doing.
         /// </summary>
-        protected ArrayList LiveList
+#if OPENSILVER
+        protected ArrayList LiveList 
+#else //BRIDGE
+        protected List<object> LiveList
+
+#endif
         {
             get { return _LiveList; }
         }
@@ -178,13 +200,23 @@ namespace OpenSilver.Internal
             // the old version free.
             if (null != _readonlyWrapper)
             {
-                _LiveList = (ArrayList)_LiveList.Clone();
+#if OPENSILVER
+                _LiveList = (ArrayList)_LiveList.Clone(); 
+#else //BRIDGE
+                _LiveList = new List<object>(_LiveList);
+                
+#endif
                 _readonlyWrapper = null;
             }
         }
 
         private object _syncRoot;
+#if OPENSILVER
         private ArrayList _LiveList = new ArrayList();
-        private ArrayList _readonlyWrapper;
+        private ArrayList _readonlyWrapper; 
+#else //BRIDGE
+        private List<object> _LiveList = new List<object>();
+        private ReadOnlyCollection<object> _readonlyWrapper;
+#endif
     }
 }

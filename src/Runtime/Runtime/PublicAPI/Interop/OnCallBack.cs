@@ -31,15 +31,15 @@ namespace CSHTML5.Internal
     // The Class may be instantiated and cannot be static anymore
     public class OnCallBack
     {
-        static private Dictionary<int, Delegate> _dictionary;
+        static private Dictionary<int, WeakReference> _dictionary;
 
-        public static void SetCallbacksDictionary(Dictionary<int, Delegate> dictionary)
+        public static void SetCallbacksDictionary(Dictionary<int, WeakReference> dictionary)
         {
             _dictionary = dictionary;
         }
 
         //constructor
-        public OnCallBack(Dictionary<int, Delegate> dictionary)
+        public OnCallBack(Dictionary<int, WeakReference> dictionary)
         {
             _dictionary = dictionary;
         }
@@ -47,7 +47,7 @@ namespace CSHTML5.Internal
         #region CallBack methods
 
 #if BRIDGE
-        public void UpdateDictionary(Dictionary<int, Delegate> newDictionary)
+        public void UpdateDictionary(Dictionary<int, WeakReference> newDictionary)
         {
             _dictionary = newDictionary;
         }
@@ -95,7 +95,13 @@ namespace CSHTML5.Internal
             //----------------------------------
             // Get the C# callback from its ID:
             //----------------------------------
-            Delegate callback = _dictionary[callbackId];
+            var callbackWeakReference = _dictionary[callbackId];
+            if (!callbackWeakReference.IsAlive)
+            {
+                _dictionary.Remove(callbackId);
+                return null;
+            }
+            Delegate callback = (Delegate)callbackWeakReference.Target;
 
             Type callbackType = callback.GetType();
             Type[] callbackGenericArgs = null;

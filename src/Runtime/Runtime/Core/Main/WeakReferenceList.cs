@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+#if !OPENSILVER
+using System.Collections.Generic;
+#endif
 
 namespace OpenSilver.Internal
 {
@@ -164,8 +167,11 @@ namespace OpenSilver.Internal
             while (foundDeadReferences)
             {
                 foundDeadReferences = false;
+#if OPENSILVER
                 ArrayList list = base.LiveList;
-
+#else
+                List<object> list = base.LiveList;
+#endif
                 for (int i = 0; i < list.Count; i++)
                 {
                     WeakReference weakRef = (WeakReference)list[i];
@@ -205,7 +211,11 @@ namespace OpenSilver.Internal
         // caller is expected to lock the SyncRoot
         private void Purge()
         {
+#if OPENSILVER
             ArrayList list = base.LiveList;
+#else
+            List<object> list = base.LiveList;
+#endif
             int destIndex;
             int n = list.Count;
 

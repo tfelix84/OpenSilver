@@ -694,7 +694,7 @@ namespace Windows.UI.Xaml.Data
 #if NETSTANDARD
                 _parent = new WeakReference(parent);
 #else // BRIDGE
-                _parent = parent;
+                _parent = new WeakReference(parent);
 #endif
                 _filterWrapper = new Predicate<object>(WrapFilter);
             }
@@ -709,7 +709,7 @@ namespace Windows.UI.Xaml.Data
 #if NETSTANDARD
                 CollectionViewSource parent = (CollectionViewSource)_parent.Target;
 #else // BRIDGE
-                CollectionViewSource parent = _parent;
+                CollectionViewSource parent = (CollectionViewSource)_parent.Target;
 #endif
                 if (parent != null)
                 {
@@ -724,7 +724,7 @@ namespace Windows.UI.Xaml.Data
 #if NETSTANDARD
             WeakReference _parent;
 #else // BRIDGE
-            CollectionViewSource _parent;
+            WeakReference _parent;
 #endif
             Predicate<object> _filterWrapper;
         }
