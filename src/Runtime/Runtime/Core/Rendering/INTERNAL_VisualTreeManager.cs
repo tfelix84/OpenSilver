@@ -229,6 +229,11 @@ namespace CSHTML5.Internal
             element.INTERNAL_AdditionalOutsideDivForMargins = null;
             element.INTERNAL_DeferredRenderingWhenControlBecomesVisible = null;
             element.INTERNAL_DeferredLoadingWhenControlBecomesVisible = null;
+
+            element.INTERNAL_InnerDivOfTheChildWrapperOfTheParentIfAny = null;
+            element.INTERNAL_OptionalSpecifyDomElementConcernedByIsEnabled = null;
+            element.INTERNAL_OptionalSpecifyDomElementConcernedByMinMaxHeightAndWidth = null;
+            
         }
         public static void MoveVisualChildInSameParent(UIElement child, UIElement parent, int newIndex, int oldIndex)
         {
