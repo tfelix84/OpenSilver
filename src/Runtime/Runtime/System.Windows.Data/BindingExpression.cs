@@ -210,6 +210,12 @@ namespace Windows.UI.Xaml.Data
 
             Target = d;
 
+            FrameworkElement targetAsFrameworkElement = Target as FrameworkElement;
+            if(targetAsFrameworkElement != null)
+            {
+                targetAsFrameworkElement.Unloaded += TargetAsFrameworkElement_Unloaded;
+            }
+
             _isUpdateOnLostFocus = ParentBinding.UpdateSourceTrigger == UpdateSourceTrigger.Default &&
                 (d is TextBox && dp == TextBox.TextProperty || 
                  d is PasswordBox && dp == PasswordBox.PasswordProperty);
@@ -247,6 +253,16 @@ namespace Windows.UI.Xaml.Data
             }
 
             _isAttaching = false;
+        }
+
+        private void TargetAsFrameworkElement_Unloaded(object sender, RoutedEventArgs e)
+        {
+            OnDetach(Target, TargetProperty);
+            FrameworkElement targetAsFrameworkElement = Target as FrameworkElement;
+            if (targetAsFrameworkElement != null)
+            {
+                targetAsFrameworkElement.Unloaded -= TargetAsFrameworkElement_Unloaded;
+            }
         }
 
         internal override void OnDetach(DependencyObject d, DependencyProperty dp)
