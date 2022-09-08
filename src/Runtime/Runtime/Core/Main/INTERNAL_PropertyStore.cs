@@ -612,17 +612,17 @@ namespace CSHTML5.Internal
             // Ensure tha the value knows in which properties it is used (this is useful for example so that a SolidColorBrush knows in which properties it is used):
             //---------------------
 
-            if (oldValue is IHasAccessToPropertiesWhereItIsUsed)
-            {
-                ((IHasAccessToPropertiesWhereItIsUsed)oldValue).PropertiesWhereUsed.Remove(new KeyValuePair<DependencyObject, DependencyProperty>(sender, storage.Property));
-            }
+            //if (oldValue is IHasAccessToPropertiesWhereItIsUsed)
+            //{
+            //    ((IHasAccessToPropertiesWhereItIsUsed)oldValue).PropertiesWhereUsed.Remove(new KeyValuePair<DependencyObject, DependencyProperty>(sender, storage.Property));
+            //}
 
-            if (newValue is IHasAccessToPropertiesWhereItIsUsed)
-            {
-                IHasAccessToPropertiesWhereItIsUsed newValueAsIHasAccessToPropertiesWhereItIsUsed = (IHasAccessToPropertiesWhereItIsUsed)newValue;
-                // Note: it is not supposed to happen that the element is already in the list.
-                newValueAsIHasAccessToPropertiesWhereItIsUsed.PropertiesWhereUsed.Add(new KeyValuePair<DependencyObject, DependencyProperty>(sender, storage.Property));
-            }
+            //if (newValue is IHasAccessToPropertiesWhereItIsUsed)
+            //{
+            //    IHasAccessToPropertiesWhereItIsUsed newValueAsIHasAccessToPropertiesWhereItIsUsed = (IHasAccessToPropertiesWhereItIsUsed)newValue;
+            //    // Note: it is not supposed to happen that the element is already in the list.
+            //    newValueAsIHasAccessToPropertiesWhereItIsUsed.PropertiesWhereUsed.Add(new KeyValuePair<DependencyObject, DependencyProperty>(sender, storage.Property));
+            //}
 
             //---------------------
             // If the element is in the Visual Tree, update the DOM:
