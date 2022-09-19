@@ -1025,7 +1025,7 @@ namespace Windows.UI.Xaml
         {
             NativeEventsManager eventsManager = _eventsManager;
             _eventsManager = null;
-            eventsManager?.DetachEvents();
+            eventsManager?.Dispose();
         }
     }
 }

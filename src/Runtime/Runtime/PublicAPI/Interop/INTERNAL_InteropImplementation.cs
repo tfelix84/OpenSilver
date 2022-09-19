@@ -34,6 +34,7 @@ namespace CSHTML5
     internal static class INTERNAL_InteropImplementation
     {
         private static bool IsJavaScriptCSharpInteropSetUp;
+        private static readonly SynchronyzedStore<string> _javascriptCallsStore = new SynchronyzedStore<string>();
         private static Dictionary<int, WeakReference> CallbacksDictionary = new Dictionary<int, WeakReference>();
         private static Random RandomGenerator = new Random();
         private static List<string> UnmodifiedJavascriptCalls = new List<string>();
@@ -97,7 +98,10 @@ namespace CSHTML5
             // 10 arguments and using "$10".
             for (int i = variables.Length - 1; i >= 0; i--)  
             {
-                var variable = variables[i];
+                var variable = variables[i] is Delegate
+                    ? JavascriptCallback.Create((Delegate)variables[i])
+                    : variables[i];
+
                 if (variable is INTERNAL_JSObjectReference)
                 {
                     //----------------------
@@ -136,19 +140,18 @@ namespace CSHTML5
                     string expression = ((INTERNAL_SimulatorJSExpression)variable).Expression;
                     javascript = javascript.Replace("$" + i.ToString(), expression);
                 }
-                else if (variable is Delegate)
+                else if (variable is JavascriptCallback)
                 {
                     //-----------
                     // Delegates
                     //-----------
 
-                    Delegate callback = (Delegate)variable;
+                    var jsCallback = (JavascriptCallback)variable;
 
                     // Add the callback to the document:
-                    int callbackId = ReferenceIDGenerator.GenerateId();
-                    CallbacksDictionary.Add(callbackId, new WeakReference(callback));
-
-                    var isVoid = callback.Method.ReturnType == typeof(void);
+                    int callbackId = jsCallback.Id;
+                    ??CallbacksDictionary.Add(callbackId, new WeakReference(callback));
+                    var isVoid = jsCallback.GetCallback().Method.ReturnType == typeof(void);
 
                     // Change the JS code to point to that callback:
                     javascript = javascript.Replace("$" + i.ToString(), string.Format(
@@ -197,6 +200,7 @@ namespace CSHTML5
             UnmodifiedJavascriptCalls.Add(unmodifiedJavascript);
 
             // Change the JS code to call ShowErrorMessage in case of error:
+            string errorCallBackId = _javascriptCallsStore.Add(unmodifiedJavascript).ToString();
             string errorCallBackId = IndexOfNextUnmodifiedJSCallInList.ToString();
             ++IndexOfNextUnmodifiedJSCallInList;
 
@@ -228,6 +232,7 @@ namespace CSHTML5
 
         internal static void ShowErrorMessage(string errorMessage, int indexOfCallInList)
         {
+            string str = _javascriptCallsStore.Get(indexOfCallInList);
             string str = UnmodifiedJavascriptCalls.ElementAt(indexOfCallInList);
 
 #if OPENSILVER
@@ -425,5 +430,37 @@ img.src = $0;", html5Path, callback);
             return DotNetForHtml5.Core.INTERNAL_Simulator.IsRunningInTheSimulator_WorkAround;
         }
 #endif
+    }
+
+    internal class SynchronyzedStore<T>
+    {
+        private readonly object _lock = new object();
+        private readonly List<T> _items;
+
+        public SynchronyzedStore()
+            : this(8192)
+        {
+        }
+
+        public SynchronyzedStore(int initialCapacity)
+        {
+            _items = new List<T>(initialCapacity);
+        }
+
+        public int Add(T item)
+        {
+            lock (_lock)
+            {
+                _items.Add(item);
+                return _items.Count - 1;
+            }
+        }
+
+        public void Clean(int index)
+        {
+            _items[index] = default;
+        }
+
+        public T Get(int index) => _items[index];
     }
 }
