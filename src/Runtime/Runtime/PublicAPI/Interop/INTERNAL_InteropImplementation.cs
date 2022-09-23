@@ -35,7 +35,7 @@ namespace CSHTML5
     {
         private static bool IsJavaScriptCSharpInteropSetUp;
         private static readonly SynchronyzedStore<string> _javascriptCallsStore = new SynchronyzedStore<string>();
-        private static Dictionary<int, WeakReference> CallbacksDictionary = new Dictionary<int, WeakReference>();
+        //private static Dictionary<int, WeakReference> CallbacksDictionary = new Dictionary<int, WeakReference>();
         private static Random RandomGenerator = new Random();
         private static List<string> UnmodifiedJavascriptCalls = new List<string>();
         private static int IndexOfNextUnmodifiedJSCallInList = 0;
@@ -76,7 +76,7 @@ namespace CSHTML5
 #endif
                     // Adding a property to the JavaScript "window" object:
                     dynamic jsWindow = INTERNAL_HtmlDomManager.ExecuteJavaScriptWithResult("window");
-                    jsWindow.SetProperty("onCallBack", new OnCallBack(CallbacksDictionary));
+                    //jsWindow.SetProperty("onCallBack", new OnCallBack(CallbacksDictionary));
 #if OPENSILVER
                 }
                 else
@@ -150,7 +150,7 @@ namespace CSHTML5
 
                     // Add the callback to the document:
                     int callbackId = jsCallback.Id;
-                    ??CallbacksDictionary.Add(callbackId, new WeakReference(callback));
+                    //CallbacksDictionary.Add(callbackId, new WeakReference(callback));
                     var isVoid = jsCallback.GetCallback().Method.ReturnType == typeof(void);
 
                     // Change the JS code to point to that callback:
@@ -201,7 +201,7 @@ namespace CSHTML5
 
             // Change the JS code to call ShowErrorMessage in case of error:
             string errorCallBackId = _javascriptCallsStore.Add(unmodifiedJavascript).ToString();
-            string errorCallBackId = IndexOfNextUnmodifiedJSCallInList.ToString();
+            //string errorCallBackId = IndexOfNextUnmodifiedJSCallInList.ToString();
             ++IndexOfNextUnmodifiedJSCallInList;
 
             // Surround the javascript code with some code that will store the
@@ -233,7 +233,7 @@ namespace CSHTML5
         internal static void ShowErrorMessage(string errorMessage, int indexOfCallInList)
         {
             string str = _javascriptCallsStore.Get(indexOfCallInList);
-            string str = UnmodifiedJavascriptCalls.ElementAt(indexOfCallInList);
+            //string str = UnmodifiedJavascriptCalls.ElementAt(indexOfCallInList);
 
 #if OPENSILVER
             if (IsRunningInTheSimulator_WorkAround())

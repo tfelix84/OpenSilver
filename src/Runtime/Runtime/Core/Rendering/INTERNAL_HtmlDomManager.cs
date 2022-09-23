@@ -873,7 +873,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateTextBlockDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -893,7 +893,8 @@ function(){
                     whiteSpace);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -905,7 +906,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateCanvasDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -923,7 +924,8 @@ function(){
                     parentRef);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -935,7 +937,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateImageDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -953,7 +955,8 @@ function(){
                     parentRef);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -966,7 +969,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateFrameworkDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -986,7 +989,8 @@ function(){
                     enablePointerEvents);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -998,7 +1002,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateRunDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -1016,7 +1020,8 @@ function(){
                     parentRef);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -1028,7 +1033,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateShapeOuterDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -1046,7 +1051,8 @@ function(){
                     parentRef);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -1058,7 +1064,7 @@ function(){
 #if PERFSTAT
             Performance.Counter("CreateShapeInnerDomElementAndAppendIt", t0);
 #endif
-            string uniqueIdentifier = NewId();
+            string uniqueIdentifier = INTERNAL_HtmlDomUniqueIdentifiers.CreateNew();
 
             var parent = parentRef as INTERNAL_HtmlDomElementReference;
             if (parent != null)
@@ -1076,7 +1082,8 @@ function(){
                     parentRef);
             }
 
-            _store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
+            INTERNAL_idsToUIElements.Add(uniqueIdentifier, new WeakReference(associatedUIElement));
+            //_store.Add(uniqueIdentifier, new WeakReference<UIElement>(associatedUIElement));
 
             return new INTERNAL_HtmlDomElementReference(uniqueIdentifier, parent);
         }
@@ -1435,36 +1442,37 @@ parentElement.appendChild(child);";
 
         internal static IEnumerable<UIElement> FindElementsInHostCoordinates(Point intersectingPoint, UIElement subtree)
         {
-            string[] elements;
-            if (subtree != null)
-            {
-                elements = JsonSerializer.Deserialize<string[]>(
-                    Convert.ToString(OpenSilver.Interop.ExecuteJavaScript(
-                        @"window.elementsFromPointOpensilver($0,$1,$2)",
-                        intersectingPoint.X,
-                        intersectingPoint.Y,
-                        OpenSilver.Interop.GetDiv(subtree))));
-            }
-            else
-            {
-                elements = JsonSerializer.Deserialize<string[]>(
-                    Convert.ToString(OpenSilver.Interop.ExecuteJavaScript(
-                        @"window.elementsFromPointOpensilver($0,$1,null)",
-                        intersectingPoint.X,
-                        intersectingPoint.Y)));
-            }
+            string[] elements = new string[0]; //BREAKING CHANGE MADE: commented the following so I had to add a constructor to avoid errors for the for loop.
+            //if (subtree != null)
+            //{
+            //    elements = JsonSerializer.Deserialize<string[]>(
+            //        Convert.ToString(OpenSilver.Interop.ExecuteJavaScript(
+            //            @"window.elementsFromPointOpensilver($0,$1,$2)",
+            //            intersectingPoint.X,
+            //            intersectingPoint.Y,
+            //            OpenSilver.Interop.GetDiv(subtree))));
+            //}
+            //else
+            //{
+            //    elements = JsonSerializer.Deserialize<string[]>(
+            //        Convert.ToString(OpenSilver.Interop.ExecuteJavaScript(
+            //            @"window.elementsFromPointOpensilver($0,$1,null)",
+            //            intersectingPoint.X,
+            //            intersectingPoint.Y)));
+            //}
 
             for (int i = elements.Length - 1; i >= 0; i--)
             {
-                if (_store.TryGetValue(elements[i], out var elemWeakRef))
+                if (INTERNAL_idsToUIElements.TryGetValue(elements[i], out var elemWeakRef))
                 {
-                    if (elemWeakRef.TryGetTarget(out var uie))
+                    if (elemWeakRef.IsAlive)
                     {
+                        var uie = elemWeakRef.Target as UIElement;
                         yield return uie;
                     }
                     else
                     {
-                        _store.Remove(elements[i]);
+                        INTERNAL_idsToUIElements.Remove(elements[i]);
                     }
                 }
             }

@@ -113,4 +113,43 @@ namespace System
         /// </summary>
         public virtual bool TrackResurrection { get; }
     }
+
+    public class WeakReference<T> where T : class
+    {
+        WeakReference _weakReference;
+
+        public WeakReference(T target)
+        {
+            _weakReference = new WeakReference(target);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="System.WeakReference"/> class, referencing
+        /// the specified object and using the specified resurrection tracking.
+        /// </summary>
+        /// <param name="target">An object to track.</param>
+        /// <param name="trackResurrection">
+        /// Indicates when to stop tracking the object. If true, the object is tracked
+        /// after finalization; if false, the object is only tracked until finalization.
+        /// </param>
+        public WeakReference(T target, bool trackResurrection)
+        {
+            _weakReference = new WeakReference(target, trackResurrection);
+        }
+
+        public void SetTarget(T target)
+        {
+            _weakReference.Target = target;
+        }
+
+        public bool TryGetTarget(out T target)
+        {
+            target = null;
+            if(_weakReference != null && _weakReference.IsAlive)
+            {
+                target = _weakReference.Target as T;
+            }
+            return target != null;
+        }
+    }
 }
