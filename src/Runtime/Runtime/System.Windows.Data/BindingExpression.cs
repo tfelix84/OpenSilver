@@ -284,11 +284,13 @@ namespace Windows.UI.Xaml.Data
                 _dataContextListener = null;
             }
 
-            if (_cvsListener != null)
-            {
-                _cvsListener.Source = null;
-                _cvsListener = null;
-            }
+            //if (_cvsListener != null)
+            //{
+            //    _cvsListener.Source = null;
+            //    _cvsListener = null;
+            //}
+
+            BindingSource = null;
 
             _propertyPathWalker.Update(null);
 
