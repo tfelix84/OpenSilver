@@ -323,5 +323,42 @@ namespace Windows.UI.Xaml
             get { return ReadInternalFlag(InternalFlags.HasLocalStyle); }
             set { WriteInternalFlag(InternalFlags.HasLocalStyle, value); }
         }
+
+        /// <summary>
+        /// Set precompiling option
+        /// </summary>
+        public PreCompileXaml PreCompileXaml
+        {
+            get { return (PreCompileXaml)GetValue(PreCompileXamlProperty); }
+            set { SetValue(PreCompileXamlProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="FrameworkElement.PreCompileXaml"/> dependency 
+        /// property.
+        /// </summary>
+        public static readonly DependencyProperty PreCompileXamlProperty =
+            DependencyProperty.Register(
+                nameof(PreCompileXaml),
+                typeof(PreCompileXaml),
+                typeof(FrameworkElement),
+                new PropertyMetadata(PreCompileXaml.None));
+
+        public string PreCompiledCss
+        {
+            get { return (string)GetValue(PreCompiledCssProperty); }
+            set { SetValue(PreCompiledCssProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="FrameworkElement.PreCompileXaml"/> dependency 
+        /// property.
+        /// </summary>
+        public static readonly DependencyProperty PreCompiledCssProperty =
+            DependencyProperty.Register(
+                nameof(PreCompiledCss),
+                typeof(string),
+                typeof(FrameworkElement),
+                new PropertyMetadata(""));
     }
 }

@@ -10,7 +10,7 @@
     <RootNamespace>DotNetForHtml5.Compiler</RootNamespace>
     <DefineConstants>$(DefineConstants);CSHTML5BLAZOR;TRACE;DEBUG</DefineConstants>
     <DefineConstants Condition="'$(Configuration)' == 'SL' ">$(DefineConstants);SILVERLIGHTCOMPATIBLEVERSION;MIGRATION</DefineConstants>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +32,9 @@
     <Compile Include="2_ConvertingXamlToCSharp\GeneratingCSharpCode.Pass1.cs" />
     <Compile Include="2_ConvertingXamlToCSharp\GeneratingCSharpCode.Pass2.cs" />
     <Compile Include="2_ConvertingXamlToCSharp\IMetadata.cs" />
+    <Compile Include="2_ConvertingXamlToCSharp\Precompile\Color.cs" />
+    <Compile Include="2_ConvertingXamlToCSharp\Precompile\Cursor.cs" />
+    <Compile Include="2_ConvertingXamlToCSharp\ProcessingPrecompileCSS.cs" />
     <Compile Include="2_ConvertingXamlToCSharp\XamlReader.cs" />
     <Compile Include="EntryPoints\ValidateCompilerVersion.cs" />
     <Compile Include="OtherHelpersAndHandlers\Version.cs" />

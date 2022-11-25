@@ -160,6 +160,11 @@ namespace DotNetForHtml5.Compiler
             return _marshalledObject.DoesTypeContainNameMemberOfTypeString(namespaceName, localTypeName, assemblyNameIfAny);
         }
 
+        public bool DoesTypeContainMemberOfTypeString(string memberName, string namespaceName, string localTypeName, string assemblyNameIfAny = null)
+        {
+            return _marshalledObject.DoesTypeContainMemberOfTypeString(memberName, namespaceName, localTypeName, assemblyNameIfAny);
+        }
+
         public XName GetCSharpEquivalentOfXamlTypeAsXName(string namespaceName, string localTypeName, string assemblyNameIfAny = null, bool ifTypeNotFoundTryGuessing = false)
         {
             return _marshalledObject.GetCSharpEquivalentOfXamlTypeAsXName(namespaceName, localTypeName, assemblyNameIfAny, ifTypeNotFoundTryGuessing);
@@ -900,6 +905,29 @@ namespace DotNetForHtml5.Compiler
             {
                 MemberInfo memberInfo;
                 memberInfo = GetMemberInfo("Name", namespaceName, localTypeName, assemblyNameIfAny, returnNullIfNotFoundInsteadOfException: true);
+                if (memberInfo == null)
+                    return false;
+                if (memberInfo.MemberType == MemberTypes.Field && ((FieldInfo)memberInfo).FieldType == typeof(string) && ((FieldInfo)memberInfo).IsPublic && !((FieldInfo)memberInfo).IsStatic && !((FieldInfo)memberInfo).IsSecurityCritical)
+                    return true;
+                if (memberInfo.MemberType == MemberTypes.Property && ((PropertyInfo)memberInfo).PropertyType == typeof(string))
+                    return true;
+                return false;
+            }
+
+            public bool DoesTypeContainMemberOfTypeString(string memberName, string namespaceName, string localTypeName, string assemblyNameIfAny = null)
+            {
+                MemberInfo memberInfo;
+
+                var elementType = FindType(namespaceName, localTypeName, assemblyNameIfAny, true);
+                if (elementType == null)
+                    return false;
+
+                MemberInfo[] membersFound = elementType.GetMember(memberName);
+                if (membersFound == null || membersFound.Length < 1)
+                    return false;
+
+                memberInfo = membersFound[0];
+
                 if (memberInfo == null)
                     return false;
                 if (memberInfo.MemberType == MemberTypes.Field && ((FieldInfo)memberInfo).FieldType == typeof(string) && ((FieldInfo)memberInfo).IsPublic && !((FieldInfo)memberInfo).IsStatic && !((FieldInfo)memberInfo).IsSecurityCritical)

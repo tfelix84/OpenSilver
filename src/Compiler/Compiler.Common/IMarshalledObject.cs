@@ -39,6 +39,8 @@ namespace DotNetForHtml5.Compiler.Common
 
         bool DoesTypeContainNameMemberOfTypeString(string namespaceName, string localTypeName, string assemblyNameIfAny = null);
 
+        bool DoesTypeContainMemberOfTypeString(string memberName, string namespaceName, string localTypeName, string assemblyNameIfAny = null);
+
         XName GetCSharpEquivalentOfXamlTypeAsXName(string namespaceName, string localTypeName, string assemblyNameIfAny = null, bool ifTypeNotFoundTryGuessing = false);
 
         string GetCSharpEquivalentOfXamlTypeAsString(string namespaceName, string localTypeName, string assemblyNameIfAny = null, bool ifTypeNotFoundTryGuessing = false);

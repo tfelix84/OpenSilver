@@ -243,6 +243,12 @@ namespace Windows.UI.Xaml.Media.Animation
                 if (target != null && propertyPath != null)
                 {
                     propertyPath.INTERNAL_PropertySetAnimationValue(target, DependencyProperty.UnsetValue);
+
+                    if (target is UIElement ui)
+                    {
+                        // apply precompiled css again.
+                        INTERNAL_VisualTreeManager.ApplyPrecompiledCss(ui);
+                    }
                 }
             }
         }

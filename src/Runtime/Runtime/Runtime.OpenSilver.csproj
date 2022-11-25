@@ -333,6 +333,7 @@
 		<Compile Include="System.Windows.Controls\CleanUpVirtualizedItemEventHandler.cs" />
 		<Compile Include="System.Windows\UIElement.Automation.cs" />
 		<Compile Include="System.Windows\UIElement.EventManager.cs" />
+		<Compile Include="System.Windows\PreCompileXaml.cs" />
 		<Compile Include="System.Windows\WORKINPROGRESS\Analytics.cs" />
 		<Compile Include="System.Windows.Automation.Peers\ExpanderAutomationPeer.cs" />
 		<Compile Include="System.Windows.Automation.Peers\TreeViewAutomationPeer.cs" />

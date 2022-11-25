@@ -252,6 +252,26 @@ namespace Windows.UI.Xaml
             _sealed = true;
         }
 
+        /// <summary>
+        /// Set precompiling option
+        /// </summary>
+        public PreCompileXaml PreCompileXaml
+        {
+            get { return (PreCompileXaml)GetValue(PreCompileXamlProperty); }
+            set { SetValue(PreCompileXamlProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="FrameworkElement.PreCompileXaml"/> dependency 
+        /// property.
+        /// </summary>
+        public static readonly DependencyProperty PreCompileXamlProperty =
+            DependencyProperty.Register(
+                nameof(PreCompileXaml),
+                typeof(PreCompileXaml),
+                typeof(FrameworkElement),
+                new PropertyMetadata(PreCompileXaml.None));
+
         #endregion Public Methods
 
         #region Internal Methods

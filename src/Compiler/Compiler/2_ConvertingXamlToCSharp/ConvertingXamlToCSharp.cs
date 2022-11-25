@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,6 +68,9 @@ namespace DotNetForHtml5.Compiler
 
                 // Fix names of visual states (for instance "PointerOver" in UWP becomes "MouseOver" in Silverlight and WPF).
                 FixingVisualStatesName.Fix(doc, isSLMigration);
+
+                // Precompile static css styles
+                ProcessingPrecompileCSS.Process(doc, reflectionOnSeparateAppDomain);
             }
 
             // Generate unique names for XAML elements:

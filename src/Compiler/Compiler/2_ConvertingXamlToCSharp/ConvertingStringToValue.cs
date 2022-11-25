@@ -319,4 +319,16 @@ namespace DotNetForHtml5.Compiler
         ExtraBlack = 950,
         UltraBlack = 950,
     }
+
+    //
+    // IMPORTANT: if you add or remove entries in this Enum, you must update
+    // accordingly the file "PreCompileXaml.cs" in the Runtime project.
+    //
+    internal enum PreCompileXaml : int
+    {
+        None,
+        BestCompatibility,
+        Balanced,
+        BestPerformance,
+    }
 }

@@ -493,6 +493,26 @@ if(nextSibling != undefined) {
             }
         }
 
+        internal static void ApplyPrecompiledCss(UIElement child)
+        {
+            if (child is FrameworkElement && ((FrameworkElement)child).PreCompiledCss.Length > 0)
+            {
+                string sElement = CSHTML5.INTERNAL_InteropImplementation.GetVariableStringForJS(child.INTERNAL_OuterDomElement);
+                string[] cssStyleNameAndValues = ((FrameworkElement)child).PreCompiledCss.Split(";:".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                string javascript = $"el={sElement}; if(el) {{";
+                if (cssStyleNameAndValues.Length % 2 == 1)
+                {
+                    throw new Exception("PrecompiledCss value is not correct.");
+                }
+                for (int i = 0; i < Math.Floor((double)cssStyleNameAndValues.Length / 2); i++)
+                {
+                    javascript += $"el.style.{cssStyleNameAndValues[i * 2].Trim()}='{cssStyleNameAndValues[i * 2 + 1].Trim()}';";
+                }
+                javascript += "}";
+                OpenSilver.Interop.ExecuteJavaScriptFastAsync(javascript);
+            }
+        }
+
         static void AttachVisualChild_Private_MainSteps(UIElement child,
             UIElement parent,
             int index,
@@ -695,10 +715,6 @@ if(nextSibling != undefined) {
             // Raise the "OnAttached" event:
             child.INTERNAL_OnAttachedToVisualTree(); // IMPORTANT: Must be done BEFORE "RaiseChangedEventOnAllDependencyProperties" (for example, the ItemsControl uses this to initialize its visual)
 
-            //--------------------------------------------------------
-            // RENDER THE ELEMENTS BY APPLYING THE CSS PROPERTIES:
-            //--------------------------------------------------------
-
             // Defer rendering when the control is not visible to when becomes visible (note: when this option is enabled, we do not apply the CSS properties of the UI elements that are not visible. Those property are applied later, when the control becomes visible. This option results in improved performance.)
             bool enableDeferredRenderingOfCollapsedControls =
                 EnableOptimizationWhereCollapsedControlsAreNotRendered
@@ -710,6 +726,8 @@ if(nextSibling != undefined) {
                 child.INTERNAL_DeferredRenderingWhenControlBecomesVisible = () =>
                 {
                     RenderElementsAndRaiseChangedEventOnAllDependencyProperties(child);
+                    ApplyPrecompiledCss(child);
+
                     child.ClearMeasureAndArrangeValidation();
                 };
             }
@@ -717,6 +735,11 @@ if(nextSibling != undefined) {
             {
                 RenderElementsAndRaiseChangedEventOnAllDependencyProperties(child);
             }
+
+            //--------------------------------------------------------
+            // RENDER THE ELEMENTS BY APPLYING THE CSS PROPERTIES:
+            //--------------------------------------------------------
+            ApplyPrecompiledCss(child);
 
             //--------------------------------------------------------
             // HANDLE TABINDEX:
