@@ -29,6 +29,7 @@
   <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\OpenSilver.Compiler.dll" TaskName="OpenSilver.Compiler.AfterXamlPreprocessor" />
   <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\OpenSilver.Compiler.dll" TaskName="OpenSilver.Compiler.TypeScriptDefToCSharp" />
   <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\OpenSilver.Compiler.Resources.dll" TaskName="OpenSilver.Compiler.Resources.ResourcesExtractorAndCopier" />
+  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tools\OpenSilver.Compiler.dll" TaskName="OpenSilver.Compiler.Updates" />
 
   <ItemGroup>
     <AvailableItemName Include="ApplicationDefinition" />
@@ -370,6 +371,10 @@
           Text="OpenSilver Before compile. IsSecondPass=$(IsSecondPass)"
           Importance="normal"/>
 
+	  <Updates Condition="'$(IsSecondPass)'=='True' AND '$(IsBrowserProject)'=='False' AND '$(SkipUpdates)'==''"
+			   ProductVersion=""/>
+	  
+	  
     <!--============================================================
       XamlPreprocessor (during Pass 1 and Pass 2)
       ============================================================-->
