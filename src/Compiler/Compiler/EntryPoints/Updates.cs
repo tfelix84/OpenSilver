@@ -51,9 +51,8 @@ namespace OpenSilver.Compiler
                 //uriBuilder.Query = $"id={identifier}&productId={productId}&version={version}&editionId={editionId}&action={CompileAction}";
                 string apiUrl = uriBuilder.ToString();
 
-                //HttpContent content = new StringContent("");
 
-                HttpResponseMessage response = await httpClient.GetAsync(apiUrl); // In theory, we don't even need response since we don't care whether the call worked or not, but it can be useful when debugging.
+                HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
             }
             catch (Exception ex)
             {
