@@ -14,6 +14,7 @@
 
 
 
+using Microsoft.Build.Framework;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -27,6 +28,8 @@ namespace OpenSilver.Compiler
     {
         private const string CompileAction = "compile";
         public string ProductVersion { get; set; }
+        [Required]
+        public string PackagePath { get; set; }
 
         public override bool Execute()
         {
@@ -41,13 +44,14 @@ namespace OpenSilver.Compiler
             {
                 string identifier = GetIdentifier();
                 string productVersion = GetProductVersion();
+                string date = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss");
 
                 //https://localhost:7234/api/Updates?id=%7BF3F4CE9F-FED3-4131-820A-656C543AE030%7D&productId=OpenSilver&version=1.1&editionId=None&action=compile
 
                 UriBuilder uriBuilder = new UriBuilder("https://opensilver-service.azurewebsites.net/api/Updates");
                 //UriBuilder uriBuilder = new UriBuilder("https://localhost:7234/api/Updates");
 
-                uriBuilder.Query = $"id={identifier}&productId={productId}&version={productVersion}";
+                uriBuilder.Query = $"id={identifier}&productId={productId}&version={productVersion}&date={date}";
                 //uriBuilder.Query = $"id={identifier}&productId={productId}&version={version}&editionId={editionId}&action={CompileAction}";
                 string apiUrl = uriBuilder.ToString();
 
@@ -80,18 +84,10 @@ namespace OpenSilver.Compiler
 
         string GetProductVersion()
         {
-            if(string.IsNullOrEmpty(ProductVersion))
+            if (string.IsNullOrEmpty(ProductVersion))
             {
-                string compilerPath = PathsHelper.GetPathOfAssembly(Assembly.GetExecutingAssembly());
-                string nuspecFilePath = Path.Combine(Path.GetDirectoryName(compilerPath), "../opensilver.nuspec");
-                string nuspecFileContent = File.ReadAllText(nuspecFilePath);
-                int versionStart = nuspecFileContent.IndexOf("<version>");
-                int versionEnd = nuspecFileContent.IndexOf("</version>");
-                int versionLength = "<version>".Length;
-                if(versionStart != -1 && versionEnd != -1)
-                {
-                    ProductVersion = nuspecFileContent.Substring(versionStart + versionLength, versionEnd - versionStart - versionLength);
-                }
+                string pathToPackageRootDirectory = Path.GetDirectoryName(PackagePath);
+                ProductVersion = PackagePath.Substring(pathToPackageRootDirectory.Length + 1);
             }
             return ProductVersion;
         }

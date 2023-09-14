@@ -370,9 +370,9 @@
     <Message
           Text="OpenSilver Before compile. IsSecondPass=$(IsSecondPass)"
           Importance="normal"/>
-
-	  <Updates Condition="'$(IsSecondPass)'=='True' AND '$(IsBrowserProject)'=='True' AND '$(SkipOpenSilverUpdates)'==''"
-			   ProductVersion=""/>
+	  
+	  <Updates Condition="'$(IsBrowserProject)'=='True' AND '$(SkipOpenSilverUpdates)'==''"
+			   PackagePath="$(PkgOpenSilver)"/>
 	  
 	  
     <!--============================================================
