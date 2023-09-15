@@ -26,6 +26,8 @@ namespace OpenSilver.Compiler
 {
     public class Updates : Microsoft.Build.Utilities.Task
     {
+        static object settingsLock = new object();
+
         private const string CompileAction = "compile";
         public string ProductVersion { get; set; }
         [Required]
@@ -71,15 +73,18 @@ namespace OpenSilver.Compiler
 
         static string GetIdentifier()
         {
-            string identifier = Properties.Settings.Default.Identifier;
-            if (string.IsNullOrWhiteSpace(identifier))
+            string id;
+            lock (settingsLock)
             {
-                identifier = Guid.NewGuid().ToString();
-                Properties.Settings.Default.Identifier = identifier;
-                Properties.Settings.Default.Save();
+                id = OpenSilverSettings.Instance.GetValue(Constants.UPDATES_IDENTIFIER_KEY);
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    id = Guid.NewGuid().ToString();
+                    OpenSilverSettings.Instance.SetValue(Constants.UPDATES_IDENTIFIER_KEY, id);
+                    OpenSilverSettings.Instance.SaveSettings();
+                }
             }
-
-            return identifier;
+            return id;
         }
 
         string GetProductVersion()
