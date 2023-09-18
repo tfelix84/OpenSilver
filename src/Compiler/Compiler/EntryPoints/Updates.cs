@@ -18,16 +18,11 @@ using Microsoft.Build.Framework;
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
-using System.Text;
-using System.Xml;
 
 namespace OpenSilver.Compiler
 {
     public class Updates : Microsoft.Build.Utilities.Task
     {
-        static object settingsLock = new object();
-
         private const string CompileAction = "compile";
         public string ProductVersion { get; set; }
         [Required]
@@ -74,15 +69,12 @@ namespace OpenSilver.Compiler
         static string GetIdentifier()
         {
             string id;
-            lock (settingsLock)
+            id = OpenSilverSettings.Instance.GetValue(Constants.UPDATES_IDENTIFIER_KEY);
+            if (string.IsNullOrWhiteSpace(id))
             {
-                id = OpenSilverSettings.Instance.GetValue(Constants.UPDATES_IDENTIFIER_KEY);
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    id = Guid.NewGuid().ToString();
-                    OpenSilverSettings.Instance.SetValue(Constants.UPDATES_IDENTIFIER_KEY, id);
-                    OpenSilverSettings.Instance.SaveSettings();
-                }
+                id = Guid.NewGuid().ToString();
+                OpenSilverSettings.Instance.SetValue(Constants.UPDATES_IDENTIFIER_KEY, id);
+                OpenSilverSettings.Instance.SaveSettings();
             }
             return id;
         }
