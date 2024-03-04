@@ -1,3 +1,4 @@
+03032024
 @echo off
 
 IF NOT EXIST "nuspec/OpenSilver.nuspec" (
